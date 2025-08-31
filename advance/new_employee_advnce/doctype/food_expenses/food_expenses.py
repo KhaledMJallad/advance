@@ -66,7 +66,7 @@ def get_project_data(project_name):
             `expected_start_date`,
             `expected_end_date`,
             `custom_liaison_officer`,
-			`custom_project_manager`
+			`project_manager`
         FROM `tabProject`
         WHERE `name` = %s
         AND `status` = 'Open'
@@ -128,7 +128,7 @@ def employeeHasAttendToday(employee, date):
 		SELECT `name`
 		FROM `tabEmployee Checkin`
 		WHERE `employee` = %s
-		AND `custom_work_mode` = 'Onsite'
+		AND `work_mode` = 'Onsite'
 		AND `time` >= %s
 		AND `time` <= %s
 	 ''', (employee, start_time, end_time, ), as_dict=True)
@@ -148,7 +148,7 @@ def getEmployeeAllWeekAttendance(employee, week_start_date, week_end_date):
 		SELECT `name`
 		FROM `tabEmployee Checkin`
 		WHERE `employee` = %s
-		AND `custom_work_mode` = 'Onsite'
+		AND `work_mode` = 'Onsite'
 		AND `time` >= %s
 		AND `time` <= %s
 	 ''', (employee, start_date, end_date, ), as_dict=True)
