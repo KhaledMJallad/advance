@@ -261,7 +261,7 @@ async function get_project_data(frm){
     }else{
        response.message.data.map((item) =>{
            liaison_officer = item.custom_liaison_officer
-           project_manager = item.custom_project_manager
+           project_manager = item.project_manager
            on_behalf = item.custom_on_behalf
            petty_cahs_amount = item.custom_pettycash_amount
        }) 
