@@ -235,7 +235,7 @@ def get_project_data_expense(project):
             `expected_start_date`,
             `expected_end_date`,
             `custom_liaison_officer`,
-            `custom_project_manager`,
+            `project_manager`,
             `custom_pettycash_amount`,
             `custom_on_behalf`
         FROM `tabProject`
