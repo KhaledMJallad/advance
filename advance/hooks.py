@@ -5,6 +5,25 @@ app_description = "this is a new app for advance "
 app_email = "Khaled.jalad@ivalueconsult.com"
 app_license = "mit"
 
+fixtures = [
+    {
+        "doctype": "Workflow",
+        "filters": [
+            ["name", "in", [
+                "Advance Flow", 
+                "Petty-Cash Food",
+                "Expense Food"
+            ]]
+        ]
+    },
+    {
+        "doctype": "Workflow State"
+    },
+    {
+        "doctype": "Expense Claim Detail"  
+    }
+]
+
 # Apps
 # ------------------
 
@@ -43,7 +62,13 @@ app_license = "mit"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-# doctype_js = {"doctype" : "public/js/doctype.js"}
+doctype_js = {
+
+	"Employee Advance" : "public/js/employee_advance.js",
+	"Expense Claim" : "public/js/expense_claim.js",
+	"Project" :"public/js/Project.js"
+
+}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -88,7 +113,7 @@ app_license = "mit"
 # Uninstallation
 # ------------
 
-# before_uninstall = "advance.uninstall.before_uninstall"
+# before_uninstall = "advance.uninstall.remove_customizations"
 # after_uninstall = "advance.uninstall.after_uninstall"
 
 # Integration Setup
@@ -129,9 +154,7 @@ app_license = "mit"
 # ---------------
 # Override standard doctype classes
 
-# override_doctype_class = {
-# 	"ToDo": "custom_app.overrides.CustomToDo"
-# }
+#override_doctype_class = {"Employee Advance": "advance.overrides.employee_advance.employee_advance.CustomEmployeeAdvance"}
 
 # Document Events
 # ---------------
@@ -176,7 +199,7 @@ app_license = "mit"
 #
 # override_whitelisted_methods = {
 # 	"frappe.desk.doctype.event.event.get_events": "advance.event.get_events"
-# }
+#}
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
@@ -241,4 +264,7 @@ app_license = "mit"
 # default_log_clearing_doctypes = {
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
+
+
+
 

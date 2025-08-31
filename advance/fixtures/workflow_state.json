@@ -1,0 +1,209 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "question-sign",
+  "modified": "2025-04-20 12:56:21.876183",
+  "name": "Pending",
+  "style": "",
+  "workflow_state_name": "Pending"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-07-07 16:25:59.600170",
+  "name": "Review",
+  "style": "",
+  "workflow_state_name": "Review"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-08-26 15:09:18.538200",
+  "name": "Save",
+  "style": "",
+  "workflow_state_name": "Save"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-08-26 15:15:55.578013",
+  "name": "Submit",
+  "style": "",
+  "workflow_state_name": "Submit"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-08-28 15:55:09.247209",
+  "name": "Return",
+  "style": "",
+  "workflow_state_name": "Return"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-07-07 10:01:01.722176",
+  "name": "Completed",
+  "style": "",
+  "workflow_state_name": "Completed"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-07-17 15:34:43.964245",
+  "name": "project manager reject",
+  "style": "",
+  "workflow_state_name": "project manager reject"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-07-17 15:36:11.615234",
+  "name": "Accountant approved",
+  "style": "",
+  "workflow_state_name": "Accountant approved"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-07-17 15:36:22.348449",
+  "name": "Accountant reject",
+  "style": "",
+  "workflow_state_name": "Accountant reject"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-07-07 10:01:25.959361",
+  "name": "Submitted",
+  "style": "",
+  "workflow_state_name": "Submitted"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-07-17 15:32:27.537946",
+  "name": "Project manager approve",
+  "style": "",
+  "workflow_state_name": "Project manager approve"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-07-31 15:29:39.967528",
+  "name": "SSD",
+  "style": "",
+  "workflow_state_name": "SSD"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-08-26 15:17:39.604379",
+  "name": "Accountant Submit",
+  "style": "",
+  "workflow_state_name": "Accountant Submit"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-07-07 09:59:29.992889",
+  "name": "Draft",
+  "style": "",
+  "workflow_state_name": "Draft"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "ok-sign",
+  "modified": "2025-04-20 12:56:21.887983",
+  "name": "Approved",
+  "style": "Success",
+  "workflow_state_name": "Approved"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-07-31 15:37:45.124531",
+  "name": "CFO",
+  "style": "",
+  "workflow_state_name": "CFO"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-07-17 15:46:03.233948",
+  "name": "Accountant",
+  "style": "",
+  "workflow_state_name": "Accountant"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "remove",
+  "modified": "2025-04-20 12:56:21.891864",
+  "name": "Rejected",
+  "style": "Danger",
+  "workflow_state_name": "Rejected"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-08-05 13:29:25.241209",
+  "name": "Supporting Services Director",
+  "style": "",
+  "workflow_state_name": "Supporting Services Director"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-07-17 15:45:35.043986",
+  "name": "Project Manager",
+  "style": "",
+  "workflow_state_name": "Project Manager"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-07-29 15:08:12.535640",
+  "name": "Initiator",
+  "style": "",
+  "workflow_state_name": "Initiator"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-07-17 15:49:11.577723",
+  "name": "Accountant Manager",
+  "style": "",
+  "workflow_state_name": "Accountant Manager"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-07-17 15:44:59.731882",
+  "name": "Intiator",
+  "style": "",
+  "workflow_state_name": "Intiator"
+ }
+]

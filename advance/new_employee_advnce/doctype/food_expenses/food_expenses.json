@@ -1,0 +1,174 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-08-25 23:45:44.014601",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_fhei",
+  "amended_from",
+  "employee",
+  "project",
+  "company",
+  "column_break_mglw",
+  "expense_claim",
+  "start_date",
+  "end_date",
+  "section_break_xtfi",
+  "expenses",
+  "section_break_vpkr",
+  "total_expenses_amount",
+  "column_break_jjtn",
+  "total_sanctioned_amount",
+  "section_break_agzb",
+  "food_details"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_fhei",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Food Expenses",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Employee",
+   "options": "Employee",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "label": "Project",
+   "options": "Project"
+  },
+  {
+   "fetch_from": "project.company",
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_mglw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "expense_claim",
+   "fieldtype": "Link",
+   "label": "Expense claim",
+   "options": "Expense Claim"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date"
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "End Date"
+  },
+  {
+   "fieldname": "section_break_agzb",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "food_details",
+   "fieldtype": "HTML",
+   "label": "Food Details "
+  },
+  {
+   "fieldname": "section_break_xtfi",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "expenses",
+   "fieldtype": "Table",
+   "label": "Expenses",
+   "options": "Food Expense Item"
+  },
+  {
+   "fieldname": "section_break_vpkr",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "total_expenses_amount",
+   "fieldtype": "Float",
+   "label": "Total Expense Amount"
+  },
+  {
+   "fieldname": "column_break_jjtn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_sanctioned_amount",
+   "fieldtype": "Float",
+   "label": "Total Sanctioned Amount"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2025-08-26 09:26:44.455179",
+ "modified_by": "Administrator",
+ "module": "new Employee Advnce",
+ "name": "Food Expenses",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Employee",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "All",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
