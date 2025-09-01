@@ -1,11 +1,11 @@
 import frappe
 
-def remove_customizations():
-  
-    custom_fields = frappe.get_all("Custom Field", filters={"module": "advance"}, pluck="name")
-    for field in custom_fields:
-        frappe.delete_doc("Custom Field", field, force=1)
+def before_uninstall():
+    workflow_name = ["Petty-Cash Food", "Expense Food"]
+    for wfn in workflow_name: 
+    	if frappe.db.exists("Workflow", wfn):
+        	frappe.delete_doc("Workflow", wfn, force=1)
 
-  
-    frappe.clear_cache()
+
+
 

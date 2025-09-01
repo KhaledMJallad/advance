@@ -11,10 +11,13 @@ frappe.ui.form.on('Expense Claim', {
         await change_employee_to_on_on_behalf(frm)
     },
     after_workflow_action:async function(frm){
-
+        if(frm.doc.workflow_state === "Approved" && (frm.doc.custom_espense_type === "Project petty-cash Renewal" || frm.doc.custom_espense_type === "Project petty-cash End")){
+            change_doc_type_status(frm)
+        }
         if(frm.doc.workflow_state === 'Rejected' || frm.doc.workflow_state === "Initiator") return;
         add_assigend_to(frm)
     },
+
     before_workflow_action: async function (frm) {
 
         if(frm.selected_workflow_action === 'Reject'){
@@ -56,21 +59,33 @@ frappe.ui.form.on('Expense Claim', {
 
          if(frm.doc.custom_rejected_reason &&  (liaison_officer === employee_number || frappe.user.has_role("System Manager"))){
                 show_rejected_reson(frm)
-            }
+         }
 
 	    if(!frm.doc.project) return;
 	    await get_employee_number(frm)
 	    await get_project_data(frm)
 	    await get_project_manager_email(frm)
 	    frm.set_value('employee', liaison_officer)
+        if(!frm.is_new()){
+            if(frm.doc.custom_espense_type === "Project petty-cash Request"){
+                frm.set_df_property('expenses', 'hidden', true)
+            }else if (frm.doc.custom_espense_type === "Project petty-cash Renewal"){
+                frm.set_df_property('expenses', 'hidden', false)
+                if(frm.doc.workflow_state === "Initiator"){
+                    frm.add_custom_button("Fetch Food", () => {
+	                    food_poopup(frm)
+	            
+                    });
+                }
+            }else{
+                frm.set_df_property('expenses', 'hidden', false)
+
+            }
+                
+        }
 	},
 	employee:async function(frm){
         await get_all_advances(frm)
-        if(liaison_officer === employee){
-            frm.set_df_property('custom_espense_type', 'read_only', false)
-        }else{
-            frm.set_df_property('custom_espense_type', 'read_only', true)
-        }
 	    frm.set_value('expense_approver', project_manager_email)
 	},
 	custom_espense_type:async function(frm){
@@ -118,6 +133,13 @@ frappe.ui.form.on("Expense Claim Detail", {
     }
 });
 
+
+async function change_doc_type_status(frm){
+    const response = frappe.call({
+        method:"advance.overrides.expense_claim.expense_claim.change_doc_type_status",
+        args:{name:frm.doc.name}
+    })
+}
 
 async function change_employee_to_on_on_behalf(frm){
     const response = frappe.call({
@@ -187,10 +209,9 @@ async function fetch_petty_cash_requested_and_end(frm){
 }
 
 async function food_poopup(frm){
-    let project_name = [];
     let total_amount = 0;
-    let name_arr = null
-    let names_str = null
+    let name_arr = [];
+    let names_str = []
     let expenses = frm.doc.expenses;
     let food_expenses = await fetch_food_expenses(frm);
     if(food_expenses.length === 0){
@@ -200,7 +221,7 @@ async function food_poopup(frm){
     if(expenses.length > 0){
        name_arr = expenses.filter(item => item.expense_food_name)
        for(const item of name_arr){
-           names_str = item.expense_food_name.split(',')
+           names_str.push(item.expense_food_name) 
        }
 
 
@@ -225,22 +246,21 @@ async function food_poopup(frm){
                 primary_action(values) {
                     Object.keys(values).forEach(key => {
                         if (values[key] === 1) {  
+                            let row = frm.add_child('expenses');
                             let [name, amount] = key.split('_');
-                            project_name.push(name);
                             let amt = String(amount).replace(/,/g, ''); 
-                            total_amount += parseFloat(amt);
+                            row.amount =  parseFloat(amt)
+                            row.sanctioned_amount = parseFloat(amt)
+                            row.expense_food_name =  name
+                            row.description = 'Petty cash Food'
+                            row.expense_type = 'Food-petty cash'
+                            row.invoice_no = '0000000'
+                            row.invoice_image = "You Can't add image to this"
+                            frm.refresh_field("expenses")                            
                         }
                     });
-
-                    let row = frm.add_child('expenses');
-                    row.amount = total_amount
-                    row.sanctioned_amount = total_amount
-                    row.expense_food_name =  project_name.join(',')
-                    row.description = 'Petty cash Food'
-                    row.expense_type = 'Food-petty cash'
-                    row.invoice_no = '0000000'
-                    row.invoice_image = "You Can't add image to this"
-                    frm.refresh_field("expenses")
+                    
+                    
 
 
                     d.hide();
@@ -261,7 +281,7 @@ async function get_project_data(frm){
     }else{
        response.message.data.map((item) =>{
            liaison_officer = item.custom_liaison_officer
-           project_manager = item.project_manager
+           project_manager = item.custom_project_manager
            on_behalf = item.custom_on_behalf
            petty_cahs_amount = item.custom_pettycash_amount
        }) 

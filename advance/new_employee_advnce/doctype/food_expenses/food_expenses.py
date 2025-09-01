@@ -6,30 +6,33 @@ from frappe.model.document import Document
 
 
 class FoodExpenses(Document):
-	def validate(self):
-		file_url = [row.invoice_image for row in self.expenses if row.invoice_image]
-		
-		response = frappe.db.sql(''' 
+    def validate(self):
+        file_url = [row.invoice_image for row in self.expenses if row.invoice_image]
+
+        response = frappe.db.sql(''' 
         SELECT fn.name
         FROM `tabFile` AS fn
         LEFT JOIN `tabFile` AS furl
         ON fn.file_url = furl.file_url  
         WHERE furl.file_url IN %s
-    ''', (file_url,), as_dict=True)
-		if response:
-			for row in response:
-				file_name = row["name"]
-				old_file = frappe.get_doc("File", file_name)
-				exists = frappe.db.exists(
+        ''', (file_url,), as_dict=True)
+
+        if response:
+            for row in response:
+                file_name = row["name"]
+                old_file = frappe.get_doc("File", file_name)
+
+                exists = frappe.db.exists(
                 "File",
                 {
                     "file_url": old_file.file_url,
                     "attached_to_doctype": "Food Expenses",
                     "attached_to_name": self.name   # استخدم self.name بدل row["name"]
                 }
-            )
-				if not exists: 
-					frappe.get_doc({
+                )
+
+            if not exists: 
+                frappe.get_doc({
                     "doctype": "File",
                     "file_url": old_file.file_url,
                     "is_private": old_file.is_private,
@@ -59,6 +62,36 @@ def get_employee_number(user):
         return {'status': 200, 'data': response}
 
 
+# @frappe.whitelist()
+# def get_resorec_pool(project,start_date, to_date):
+#     response = frappe.db.select(''' 
+#     SELECT 
+#         `employee`
+#     FROM 
+#         `tabProject Assignment`
+#     WHERE 
+#         `project` = %s
+#     AND 
+#         `start_date` =%s
+#     AND 
+#         `end_date` = %s
+    
+
+#     ''', (project, start_date, to_date), as_dict=True)
+#     if not response:
+#          return {
+#             'status': 404,
+#             'message': (
+#                 "You cannot select this project because it has been completed, "
+#                 "closed, or does not exist. Please contact your system administrator "
+#                 "to resolve this issue."
+#             )
+#         }
+#     else:
+#          return {
+#             'status': 200,
+#             'data': response
+#          }
 @frappe.whitelist()
 def get_project_data(project_name):
     response = frappe.db.sql(''' 
@@ -66,7 +99,7 @@ def get_project_data(project_name):
             `expected_start_date`,
             `expected_end_date`,
             `custom_liaison_officer`,
-			`project_manager`
+			`custom_project_manager`
         FROM `tabProject`
         WHERE `name` = %s
         AND `status` = 'Open'
@@ -128,7 +161,7 @@ def employeeHasAttendToday(employee, date):
 		SELECT `name`
 		FROM `tabEmployee Checkin`
 		WHERE `employee` = %s
-		AND `work_mode` = 'Onsite'
+		AND `custom_work_mode` = 'Onsite'
 		AND `time` >= %s
 		AND `time` <= %s
 	 ''', (employee, start_time, end_time, ), as_dict=True)
@@ -148,7 +181,7 @@ def getEmployeeAllWeekAttendance(employee, week_start_date, week_end_date):
 		SELECT `name`
 		FROM `tabEmployee Checkin`
 		WHERE `employee` = %s
-		AND `work_mode` = 'Onsite'
+		AND `custom_work_mode` = 'Onsite'
 		AND `time` >= %s
 		AND `time` <= %s
 	 ''', (employee, start_date, end_date, ), as_dict=True)
@@ -187,7 +220,7 @@ def assign_food_expenses(workflow_state, project_manager, name):
             continue
 
         # ❌ Skip Project Manager role → instead use the one you pass in
-        if row['allowed'] == 'Project Manager':
+        if row['allowed'] == 'Projects Manager':
             project_mgr_user = frappe.db.sql('''
                 SELECT user_id 
                 FROM `tabEmployee`

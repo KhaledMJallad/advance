@@ -33,8 +33,7 @@ def share_with_and_assign_to(workflow_state, project_manager, name):
         if row['email'] == 'admin@example.com':
             continue
 
-        # ❌ Skip Project Manager role → instead use the one you pass in
-        if row['allowed'] == 'Project Manager':
+        if row['allowed'] == 'Projects Manager':
             project_mgr_user = frappe.db.sql('''
                 SELECT user_id 
                 FROM `tabEmployee`
@@ -106,6 +105,12 @@ def change_employee_to_on_bahalf(name, on_behalf):
     frappe.db.commit()
     return {'status': 201, 'message': 'successfuly updated'}
 
+
+@frappe.whitelist()
+def change_doc_type_status(name):
+    doc = frappe.get_doc("Expense Claim", name)
+    doc.docstatus = 1   
+    doc.save()
 
 @frappe.whitelist()
 def image_show(expenses, name):
@@ -235,7 +240,7 @@ def get_project_data_expense(project):
             `expected_start_date`,
             `expected_end_date`,
             `custom_liaison_officer`,
-            `project_manager`,
+            `custom_project_manager`,
             `custom_pettycash_amount`,
             `custom_on_behalf`
         FROM `tabProject`
@@ -335,8 +340,6 @@ def fetch_petty_cahs_request_and_end(project):
             `project` = %s
         AND 
             `custom_espense_type` = 'Project petty-cash Request'
-        AND 
-            `docstatus` = 1
      ''', (project, ), as_dict = True)
     
     petty_cash_end = frappe.db.sql('''
