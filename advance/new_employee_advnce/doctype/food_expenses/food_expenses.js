@@ -139,7 +139,9 @@ frappe.ui.form.on("Food Expense Item", {
             }
         }
         get_all_amounts_and_the_allowed_one(frm) 
-    }
+    },
+
+
 });
 
 async function add_assigend_to(frm){
@@ -187,7 +189,7 @@ async function get_project_data(frm){
             start_date = item.expected_start_date
             end_date = item.expected_end_date
             liaison_officer = item.custom_liaison_officer
-            project_manager = item.project_manager
+            project_manager = item.custom_project_manager
         }
     }
 }

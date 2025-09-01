@@ -6,22 +6,15 @@ app_email = "Khaled.jalad@ivalueconsult.com"
 app_license = "mit"
 
 fixtures = [
-    {
-        "doctype": "Workflow",
-        "filters": [
-            ["name", "in", [
-                "Advance Flow", 
-                "Petty-Cash Food",
-                "Expense Food"
-            ]]
-        ]
+      {
+        "dt": "Workflow",
+        "filters": [["name", "in", ["Petty-Cash Food", "Expense Food"]]]
     },
     {
-        "doctype": "Workflow State"
+        "dt": "Workflow State",
+        "filters": [["workflow_state_name", "in", ["Initiator", "Project Manager", "Accountant", "CFO", "Supporting Services Director", "Accountant 	Submit", "Approved", "Rejected"]]]
     },
-    {
-        "doctype": "Expense Claim Detail"  
-    }
+    {"dt": "DocType", "filters": [["name", "=", "Expense Claim Detail"]]}
 ]
 
 # Apps
@@ -113,7 +106,7 @@ doctype_js = {
 # Uninstallation
 # ------------
 
-# before_uninstall = "advance.uninstall.remove_customizations"
+before_uninstall = "advance.uninstall.before_uninstall"
 # after_uninstall = "advance.uninstall.after_uninstall"
 
 # Integration Setup
