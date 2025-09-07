@@ -3,23 +3,30 @@ let project_manager = null;
 let on_behalf = null;
 let employee = null;
 let project_manager_email = null;
-let petty_cahs_amount = null;
+let payable_account = '2110 - Creditors - TD';
 frappe.ui.form.on('Expense Claim', {
-    validate:async function (frm) {
-        await get_project_data(frm)
+    after_save:async function(frm){
+        await update_petty_cash(frm)
         await share_file(frm)
-        await change_employee_to_on_on_behalf(frm)
     },
     after_workflow_action:async function(frm){
-        if(frm.doc.workflow_state === "Approved" && (frm.doc.custom_espense_type === "Project petty-cash Renewal" || frm.doc.custom_espense_type === "Project petty-cash End")){
-            change_doc_type_status(frm)
+        debugger;
+        if(frm.doc.workflow_state === "Approved" && (frm.doc.custom_espense_type === "Replenishment" || frm.doc.custom_espense_type === "Project petty-cash End")){
+            await update_food(frm)
+        }
+        await get_project_data(frm)
+        if(frm.doc.employee !== on_behalf && frm.doc.workflow_state !== "Initiator"){
+            await change_employee_to_on_on_behalf(frm)
+            frm.save(); 
+        }else if(frm.doc.workflow_state === "Initiator" && frm.doc.employee !== liaison_officer){
+            await cahnge_expenses_to_lission_officer(frm)
+            frm.save(); 
         }
         if(frm.doc.workflow_state === 'Rejected' || frm.doc.workflow_state === "Initiator") return;
-        add_assigend_to(frm)
+            add_assigend_to(frm)
     },
 
     before_workflow_action: async function (frm) {
-
         if(frm.selected_workflow_action === 'Reject'){
             frappe.dom.unfreeze();
             return new Promise(resolve => {
@@ -42,94 +49,108 @@ frappe.ui.form.on('Expense Claim', {
             frm.set_value('custom_rejected_reason', null);
         }
 
-        if(frm.doc.custom_espense_type === 'Project petty-cash Request' && (frm.selected_workflow_action  === "Approve" && frm.doc.workflow_state === "Supporting Services Director")){
-                await get_project_data(frm)
-                await create_new_advance(frm, petty_cahs_amount)
-        }else if(frm.doc.custom_espense_type === 'Project petty-cash Renewal' && (frm.selected_workflow_action  === "Approve" && frm.doc.workflow_state === "Supporting Services Director")){
-            await update_food(frm, petty_cahs_amount)
+       if(frm.doc.custom_espense_type === 'Replenishment' && (frm.selected_workflow_action  === "Approve" && frm.doc.workflow_state === "Accountant Submit")){
+
             await create_new_advance(frm, frm.doc.total_sanctioned_amount)
         }
 
 
     },
 	refresh:async function(frm) {
-        if(!frm.doc.payable_account && frappe.user.has_role("Accounts User")){
-            frm.set_value('payable_account', "2110 - Creditors - TD")
-        }
-
-         if(frm.doc.custom_rejected_reason &&  (liaison_officer === employee_number || frappe.user.has_role("System Manager"))){
-                show_rejected_reson(frm)
-         }
-
-	    if(!frm.doc.project) return;
-	    await get_employee_number(frm)
-	    await get_project_data(frm)
-	    await get_project_manager_email(frm)
-	    frm.set_value('employee', liaison_officer)
-        if(!frm.is_new()){
-            if(frm.doc.custom_espense_type === "Project petty-cash Request"){
-                frm.set_df_property('expenses', 'hidden', true)
-            }else if (frm.doc.custom_espense_type === "Project petty-cash Renewal"){
-                frm.set_df_property('expenses', 'hidden', false)
-                if(frm.doc.workflow_state === "Initiator"){
+        if(frm.is_new()){
+            if(!frm.doc.project) return;
+            await get_project_data(frm);
+            if(frappe.user.has_role("System Manager")){
+                frm.set_df_property('employee', 'read_only', true)
+                frm.set_df_property('expense_approver', 'read_only', true)
+                frm.set_value('employee', liaison_officer)
+                await get_project_manager_email(frm)
+                await get_project_advance(frm)
+                frm.set_value('expense_approver', project_manager_email)
+                frm.clear_table("expenses");
+                frm.refresh_field("expenses");
+                if(frm.doc.custom_espense_type === "Replenishment"){
                     frm.add_custom_button("Fetch Food", () => {
-	                    food_poopup(frm)
-	            
+                        food_poopup(frm)
+                    
                     });
                 }
             }else{
-                frm.set_df_property('expenses', 'hidden', false)
-
-            }
-                
-        }
-	},
-	employee:async function(frm){
-        await get_all_advances(frm)
-	    frm.set_value('expense_approver', project_manager_email)
-	},
-	custom_espense_type:async function(frm){
-        await fetch_petty_cash_requested_and_end(frm)
-        frm.clear_table("expenses");
-        frm.refresh_field("expenses");
-	    if(frm.doc.custom_espense_type === 'Project petty-cash Renewal'){
-            await get_project_advance(frm)
-	        if(frm.doc.advances.length === 0){
-	            frm.set_value('custom_espense_type', 'Expense Claim')
-	            frappe.throw('You must request a project petty cash before proceeding with the renewal.');
-	        }
-	        frm.add_custom_button("Fetch Food", () => {
-	                food_poopup(frm)
-	            
-            });
-            frm.set_df_property('expenses', 'reqd', true);  
-            frm.set_df_property('expenses', 'hidden', false);
-	    }else if(frm.doc.custom_espense_type === "Project petty-cash Request"){
-            frm.set_df_property('expenses', 'reqd', false);  
-            frm.set_df_property('expenses', 'hidden', true); 
-            let row = frm.add_child('expenses');
-            row.amount = 0.1
-            row.sanctioned_amount = 0.1
-            row.description = ''
-            row.expense_type = 'Food-petty cash'
-            frm.refresh_field("expenses")
+                await get_employee_number(frm);
+                if(employee === liaison_officer){
+                    frm.set_df_property('employee', 'read_only', true)
+                    frm.set_df_property('expense_approver', 'read_only', true)
+                    frm.set_value('employee', liaison_officer)
+                    await get_project_manager_email(frm)
+                    await get_project_advance(frm)
+                    frm.set_value('expense_approver', project_manager_email)
+                    frm.clear_table("expenses");
+                    frm.refresh_field("expenses");
+                    if(frm.doc.custom_espense_type === "Replenishment"){
+                    frm.add_custom_button("Fetch Food", () => {
+                        food_poopup(frm)
+                    
+                    });
+                }
+                }else{
+                    frm.set_df_property('employee', 'read_only', false)
+                    frm.set_df_property('expense_approver', 'read_only', false)
+                }
+            }   
         }else{
-            frm.set_df_property('expenses', 'reqd', true);  
-            frm.set_df_property('expenses', 'hidden', false); 
-            await get_all_advances(frm)
-	       frm.remove_custom_button("Fetch Food");
-            
+            if(frappe.user.has_role('Accounts User')){
+                frm.set_df_property(payable_account, 'read_only', false)
+                if(!frm.doc.payable_account){
+                    frm.set_value('payable_account', payable_account)
+                }
+            }else{
+                frm.set_df_property(payable_account, 'read_only', true)
+            }
         }
 	},
     
 })
 
 frappe.ui.form.on("Expense Claim Detail", {
-    expenses_add: function(frm, cdt, cdn) {
-        const allowe_type = ['Project petty-cash Renewal', 'Project petty-cash End'];
-        if(allowe_type.includes(frm.doc.custom_espense_type)){
-            frappe.model.set_value(cdt, cdn, "expense_type", "petty-cash");
+    invoice_image:function(frm, cdt, cdn){
+        frm.doc.__unsaved = false
+    },
+      invoice_no: function(frm, cdt, cdn) {
+        const row = locals[cdt][cdn];
+        const expenses = frm.doc.expenses || [];
+        if(!row.invoice_no) return;
+        if (row.invoice_no) {
+
+            const invoices = new Set();
+            expenses.forEach(item => {
+                // Add only other rows' invoice_no values
+                if (item.name !== row.name && item.invoice_no) {
+                    invoices.add(item.invoice_no);
+                }
+            });
+
+            if (invoices.has(row.invoice_no) && !row.expense_food_name) {
+                frappe.model.set_value(cdt, cdn, "invoice_no", null);   // clear value
+                frm.refresh_field("expenses");
+                frappe.throw(__('Please ensure that each invoice is assigned a unique number.'));
+            }
         }
+    },
+     form_render: function(frm, cdt, cdn) {
+        $(cur_frm.fields_dict["expenses"].grid.wrapper)
+            .find('.control-value a')
+            .off("click")
+            .on("click", function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                let $el = $(this);
+                let doctype = $el.attr("data-doctype");
+                let name = $el.text().trim();
+                if (doctype && name) {
+                    let url = frappe.utils.get_form_link(doctype, name);
+                    window.open(url, "_blank");
+                }
+            });
     }
 });
 
@@ -139,6 +160,15 @@ async function change_doc_type_status(frm){
         method:"advance.overrides.expense_claim.expense_claim.change_doc_type_status",
         args:{name:frm.doc.name}
     })
+}
+
+async function cahnge_expenses_to_lission_officer(frm){
+    console.log(liaison_officer)
+     const response = frappe.call({
+        method:"advance.overrides.expense_claim.expense_claim.change_to_lission_officer",
+        args:{name:frm.doc.name, liaison_officer:liaison_officer}
+    })
+    console.log(response)
 }
 
 async function change_employee_to_on_on_behalf(frm){
@@ -159,54 +189,67 @@ async function add_assigend_to(frm){
 }
 
 async function share_file(frm){
-    frappe.call({
+    await frappe.call({
         method:"advance.overrides.expense_claim.expense_claim.image_show",
-        args:{expenses:frm.doc.expenses, name:frm.doc.name}
-    })
+        args:{expenses:frm.doc.expenses, name:frm.doc.name},
+        freeze: true,
+        freeze_message: __("Uploading Files Please waite..."),
+        callback: function(r) {
+        if (r.message.status === 201) {
+            frappe.show_alert({
+                message: __("File linked successfully"),
+                indicator: "green"
+            }, 5);
+
+            // refresh the page after success
+            frm.reload_doc();
+        } else {
+            frappe.show_alert({
+                message: __("Failed to link file"),
+                indicator: "red"
+            }, 5);
+        }
+    }
+    });
+
 }
 
 async function create_new_advance(frm, petty_cahs_amount_data){
+    debugger;
     const response = frappe.call({
         method:"advance.overrides.expense_claim.expense_claim.create_advance",
-        args:{name:frm.doc.name, employee: frm.doc.employee, petty_cash_amount:petty_cahs_amount_data, project:frm.doc.project, company:frm.doc.company}
+        args:{
+            name:frm.doc.name, 
+            employee: frm.doc.employee, 
+            petty_cash_amount:petty_cahs_amount_data, 
+            project:frm.doc.project, 
+            company:frm.doc.company,
+            petty_cash: frm.doc.custom_pettycash
+        }
     })
 
 }
 async function update_food(frm) {
-    const response = await frappe.call({
+    await frappe.call({
         method:"advance.overrides.expense_claim.expense_claim.update_food",
-        args:{expenses:frm.doc.expenses, name:frm.doc.name}
-    });
-}
-async function fetch_petty_cash_requested_and_end(frm){
-    let petty_cash_requested = 0;
-    let petty_cash_end = 0
-    const response = await frappe.call({
-        method:"advance.overrides.expense_claim.expense_claim.fetch_petty_cahs_request_and_end",
-        args:{project:frm.doc.project}
-    });
+        args:{expenses:frm.doc.expenses, name:frm.doc.name},
+        freeze:true,
+        freeze_message :__("Updateing Food Please waite..."),
+         callback: function(r) {
+        if (r.message.status === 201) {
+            frappe.show_alert({
+                message: __("Food has been updated successfuly"),
+                indicator: "green"
+            }, 5);
 
-    if(response.message.status === 200){
-        response.message.petty_cash_request.map((item) => {
-            petty_cash_requested = item.requested
-        })
-         response.message.petty_cash_end.map((item) => {
-            petty_cash_end = item.end
-        })
+            // refresh the page after success
+            frm.reload_doc();
+        } 
     }
 
-    if(frm.doc.custom_espense_type === "Project petty-cash Request"){
-        if(petty_cash_requested > petty_cash_end){
-            frm.set_value('custom_espense_type', 'Expense Claim')
-            frappe.throw("You cannot submit a new request at this time, as there is already an active one in progress.")
-        }
-    }else if(frm.doc.custom_espense_type === "Project petty-cash Renewal" || frm.doc.custom_espense_type === "Project petty-cash End"){
-        if(petty_cash_requested  <= petty_cash_end){
-            frm.set_value('custom_espense_type', 'Expense Claim')
-            frappe.throw("You cannot renew or close the petty cash before creating a new request.")
-        }
-    }
+    });
 }
+
 
 async function food_poopup(frm){
     let total_amount = 0;
@@ -221,13 +264,12 @@ async function food_poopup(frm){
     if(expenses.length > 0){
        name_arr = expenses.filter(item => item.expense_food_name)
        for(const item of name_arr){
-           names_str.push(item.expense_food_name) 
+            names_str.push(item.expense_food_name) 
        }
-
 
         if(names_str.length > 0){
         food_expenses.map((item) => {
-            if(names_str.includes(item.label)){
+            if(names_str.includes(item.fieldname.split('_')[0].trim())){
                 item.default = 1; 
             }else{
                 item.default = 0; 
@@ -240,22 +282,24 @@ async function food_poopup(frm){
         
    
     let d = new frappe.ui.Dialog({
-                title: 'Custom Popup Module',
+                title: 'Food Expenses',
                 fields: food_expenses,
                 primary_action_label: 'Submit',
                 primary_action(values) {
+                    frm.doc.expenses = expenses.filter(row => !row.expense_food_name);
+                    frm.refresh_field("expenses");
                     Object.keys(values).forEach(key => {
+
                         if (values[key] === 1) {  
                             let row = frm.add_child('expenses');
                             let [name, amount] = key.split('_');
                             let amt = String(amount).replace(/,/g, ''); 
-                            row.amount =  parseFloat(amt)
-                            row.sanctioned_amount = parseFloat(amt)
-                            row.expense_food_name =  name
-                            row.description = 'Petty cash Food'
-                            row.expense_type = 'Food-petty cash'
-                            row.invoice_no = '0000000'
-                            row.invoice_image = "You Can't add image to this"
+                            frappe.model.set_value(row.doctype, row.name, "amount", parseFloat(amt));
+                            frappe.model.set_value(row.doctype, row.name, "expense_food_name", name);
+                            frappe.model.set_value(row.doctype, row.name, "description", 'Petty cash Food');
+                            frappe.model.set_value(row.doctype, row.name, "expense_type", '5224 - Hospitality Expenses - iKSA');
+                            frappe.model.set_value(row.doctype, row.name, "invoice_no", '0000000');
+                            frappe.model.set_value(row.doctype, row.name, "invoice_image", "You Can't add image to this");
                             frm.refresh_field("expenses")                            
                         }
                     });
@@ -279,9 +323,10 @@ async function get_project_data(frm){
     if(response.message.status === 404){
         frappe.throw(response.message.message)
     }else{
+
        response.message.data.map((item) =>{
            liaison_officer = item.custom_liaison_officer
-           project_manager = item.custom_project_manager
+           project_manager = item.custom_project_mnager
            on_behalf = item.custom_on_behalf
            petty_cahs_amount = item.custom_pettycash_amount
        }) 
@@ -299,31 +344,20 @@ async function get_project_manager_email(frm){
             project_manager_email = item.user_id
         })
         
-        
     }
 }
 async function get_employee_number(frm){
-    let employee_number = null;
     const response = await frappe.call({
         method:"advance.overrides.employee_advance.employee_advance.get_employee_number",
         args:{user:frappe.session.user}
     });
     if(response.message.status === 404){
-        if(frappe.user.has_role("System Manager")){
-            frm.set_df_property('custom_espense_type', 'read_only', false)
-        }else{
-            frm.set_df_property('custom_espense_type', 'read_only', true)
-        }
+        frappe.throw('You are accessing this page incorrectly. Please access it through the proper procedure.')
     }else{
         response.message.data.map((item) => {
-            employee_number = item.name
             employee = item.name
         })
-        if(employee_number === liaison_officer){
-            frm.set_df_property('custom_espense_type', 'read_only', false)
-        }else{
-            frm.set_df_property('custom_espense_type', 'read_only', true)
-        }
+      
     }
     
     
@@ -350,6 +384,8 @@ async function get_project_advance(frm){
 }
 async function fetch_food_expenses(frm){
     let food_expenses = [];
+    let start_date = null;
+    let end_date = null;
     const response = await frappe.call({
         method:"advance.overrides.expense_claim.expense_claim.fetch_food",
         args:{project:frm.doc.project, employee:frm.doc.employee}
@@ -360,8 +396,10 @@ async function fetch_food_expenses(frm){
     }else{
 
         response.message.data.map((item) => {
+            start_date = item.start_date,
+            end_date = item.end_date
             food_expenses.push({
-                label: item.name,
+                label: `${item.name} | Total Sanctioned Amount: ${item.total_sanctioned_amount} | from: ${start_date} -to: ${end_date}`,
                 fieldname: `${item.name}_${item.total_sanctioned_amount}`,
                 fieldtype: 'Check'
             })  
@@ -370,7 +408,7 @@ async function fetch_food_expenses(frm){
 
       
     
-        return food_expenses;
+        return  food_expenses;
     }
 }
 async function get_all_advances(frm){
@@ -394,6 +432,33 @@ async function get_all_advances(frm){
     }
 }
 
+async function update_petty_cash(frm){
+    console.log(frm.doc.custom_pettycash)
+    console.log(frm.doc.name)
+    frappe.call({
+        method:"advance.overrides.expense_claim.expense_claim.update_petty_cash",
+        args:{name:frm.doc.name, petty_cash:frm.doc.custom_pettycash},
+        freeze: true,
+        freeze_message: __("Updating petty-cash. Please waite..."),
+        callback: function(r) {
+            console.log(r)
+        if (r.message.status === 201) {
+            frappe.show_alert({
+                message: __("File linked successfully"),
+                indicator: "green"
+            }, 5);
+
+            // refresh the page after success
+            frm.reload_doc();
+        } else {
+            frappe.show_alert({
+                message: __("Failed to link file"),
+                indicator: "red"
+            }, 5);
+        }
+    }
+    })
+}
 
 function show_rejected_reson(frm){
     const dialog = new frappe.ui.Dialog({

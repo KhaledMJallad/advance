@@ -30,15 +30,6 @@
   "docstatus": 0,
   "doctype": "Workflow State",
   "icon": "",
-  "modified": "2025-08-05 13:29:25.241209",
-  "name": "Supporting Services Director",
-  "style": "",
-  "workflow_state_name": "Supporting Services Director"
- },
- {
-  "docstatus": 0,
-  "doctype": "Workflow State",
-  "icon": "",
   "modified": "2025-07-17 15:46:03.233948",
   "name": "Accountant",
   "style": "",
@@ -48,10 +39,10 @@
   "docstatus": 0,
   "doctype": "Workflow State",
   "icon": "",
-  "modified": "2025-07-17 15:45:35.043986",
-  "name": "Project Manager",
+  "modified": "2025-08-05 13:29:25.241209",
+  "name": "Supporting Services Director",
   "style": "",
-  "workflow_state_name": "Project Manager"
+  "workflow_state_name": "Supporting Services Director"
  },
  {
   "docstatus": 0,
@@ -61,5 +52,14 @@
   "name": "Initiator",
   "style": "",
   "workflow_state_name": "Initiator"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-07-17 15:45:35.043986",
+  "name": "Project Manager",
+  "style": "",
+  "workflow_state_name": "Project Manager"
  }
 ]

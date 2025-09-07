@@ -20,17 +20,17 @@ def share_with_and_assign_to(workflow_state, project_manager, name):
         LEFT JOIN `tabUser` AS u
             ON u.name = hr.parent
         WHERE wft.state = %s
+          AND wf.document_type = 'Expense Claim'
           AND u.enabled = 1
     ''', (workflow_state,), as_dict=True)
 
     if not response:
-        return {'status': 404, 'message': 'No Employee has been found'}
+        return {'status': 404, 'message': 'No employee found for this workflow state'}
 
     clear_email = []
 
     for row in response:
-        # ❌ Skip admin
-        if row['email'] == 'admin@example.com':
+        if not row['email'] or row['email'] in ['admin@example.com', 'Administrator']:
             continue
 
         if row['allowed'] == 'Projects Manager':
@@ -40,18 +40,18 @@ def share_with_and_assign_to(workflow_state, project_manager, name):
                 WHERE name = %s AND status = 'Active'
             ''', (project_manager,), as_dict=True)
 
-            if project_mgr_user and project_mgr_user[0].get('user_id') and project_mgr_user[0]['user_id'] != 'admin@example.com':
-                clear_email.append({'email': project_mgr_user[0]['user_id']})
+            if project_mgr_user and project_mgr_user[0].get('user_id'):
+                user_id = project_mgr_user[0]['user_id']
+                if user_id not in ['admin@example.com', 'Administrator']:
+                    clear_email.append(user_id)
         else:
-            clear_email.append({'email': row['email']})
+            clear_email.append(row['email'])
 
-    # ---- Create ToDo and Share ----
+    # ---- ToDo + Share ----
     status = ['Open', 'Pending']
     created, skipped = [], []
 
-    for row in clear_email:
-        user_email = row['email']
-
+    for user_email in clear_email:
         exists = frappe.db.exists(
             "ToDo",
             {
@@ -66,8 +66,7 @@ def share_with_and_assign_to(workflow_state, project_manager, name):
             skipped.append(user_email)
             continue
 
-        # Create ToDo
-        todo_doc = frappe.get_doc({
+        frappe.get_doc({
             "doctype": "ToDo",
             "allocated_to": user_email,
             "reference_type": "Expense Claim",
@@ -76,11 +75,10 @@ def share_with_and_assign_to(workflow_state, project_manager, name):
             "priority": "High",
             "status": "Open",
             "date": frappe.utils.today()
-        })
-        todo_doc.insert(ignore_permissions=True)
+        }).insert(ignore_permissions=True)
 
-        # Share the document with the user
-        frappe.share.add("Expense Claim", name, user_email, read=1, write=0)
+        # Share with read-only access by default
+        frappe.share.add("Expense Claim", name, user_email, read=1, write=1)
 
         created.append(user_email)
 
@@ -100,8 +98,14 @@ def share_with_and_assign_to(workflow_state, project_manager, name):
 
 
 @frappe.whitelist()
+def change_to_lission_officer(name, liaison_officer):
+    frappe.db.set_value("Expense Claim", name, "employee", liaison_officer, update_modified=True)
+    frappe.db.commit()
+    return {'status': 201, 'message': 'successfuly updated'}
+
+@frappe.whitelist()
 def change_employee_to_on_bahalf(name, on_behalf):
-    frappe.db.set_value("Food Expenses", on_behalf, "employee", name, update_modified=True)
+    frappe.db.set_value("Expense Claim", name, "employee", on_behalf, update_modified=True)
     frappe.db.commit()
     return {'status': 201, 'message': 'successfuly updated'}
 
@@ -114,48 +118,50 @@ def change_doc_type_status(name):
 
 @frappe.whitelist()
 def image_show(expenses, name):
+    # Collect file URLs from expenses
     arr = json.loads(expenses)
-    urls = [row["invoice_image"] for row in arr]
+    file_urls = [row["invoice_image"] for row in arr]
+    if not file_urls:
+        return {'status': 400, 'message': 'No files found'}
+
     response = frappe.db.sql(''' 
-        SELECT fn.name
-        FROM `tabFile` AS fn
-        LEFT JOIN `tabFile` AS furl
-            ON fn.file_url = furl.file_url  
-        WHERE furl.file_url IN %s
-    ''', (urls,), as_dict=True)
-    if response:
-        for row in response:
-            file_name = row["name"]
-            old_file = frappe.get_doc("File", file_name)
+        SELECT name, file_url, is_private
+        FROM `tabFile`
+        WHERE file_url IN %(file_urls)s
+    ''', {"file_urls": tuple(file_urls)}, as_dict=True)
 
-            exists = frappe.db.exists(
-                "File",
-                {
-                    "file_url": old_file.file_url,
-                    "attached_to_doctype": "Expense Claim",
-                    "attached_to_name": name # use self.name here
-                }
-            )
-
+    
+    existing_files = frappe.get_all(
+        "File",
+        filters={
+            "attached_to_doctype": "Expense Claim",   
+            "attached_to_name": name,
+            "file_url": ["in", file_urls]
+        },
+        pluck="file_url"
+    )
+    for row in response:
+        if row["file_url"] not in existing_files:
             frappe.get_doc({
-                    "doctype": "File",
-                    "file_url": old_file.file_url,
-                    "is_private": old_file.is_private,
-                    "attached_to_doctype": 'Expense Claim',
-                    "attached_to_name": name
+                "doctype": "File",
+                "file_url": row["file_url"],
+                "is_private": row["is_private"],
+                "attached_to_doctype": "Expense Claim",   # 🔹 Or pass as param
+                "attached_to_name": name
             }).insert(ignore_permissions=True)
+        else:
+            return {'status': 404, 'messgae': 'not file has been founc'}
 
-        return {'status':201, 'message': 'Files has been shared successfuly'}
-
+    return {'status': 201, 'message': 'Files have been shared successfully'}
 
 @frappe.whitelist()
-def create_advance(name ,employee, petty_cash_amount, project, company):
+def create_advance(name ,employee, petty_cash_amount, project, company, petty_cash):
     try:
         advance = frappe.new_doc("Employee Advance")
         advance.employee = employee
         advance.advance_amount = float(str(petty_cash_amount).replace(",", ""))
         advance.exchange_rate = 1
-        advance.advance_account = '1610 - Employee Advances - TD'
+        advance.advance_account = '5200 - Indirect Expenses - TD'
         advance.company = company
         advance.currency = 'JOD'
         advance.posting_date = frappe.utils.nowdate()
@@ -165,10 +171,11 @@ def create_advance(name ,employee, petty_cash_amount, project, company):
         advance.insert(ignore_permissions=True)
         advance.submit()
 
-        # link to Expense Claim
         frappe.db.set_value("Expense Claim", name, "custom_advance", advance.name)
+        frappe.db.set_value("Petty-cash", petty_cash, "custom_advance", advance.name)
         frappe.db.commit()
 
+        
         return {"status": 201, "advance": advance.name}
 
     except Exception as e:
@@ -187,13 +194,24 @@ def create_advance(name ,employee, petty_cash_amount, project, company):
 @frappe.whitelist()
 def update_food(expenses, name):
     arr = json.loads(expenses)
+    updated = 0
+
     for row in arr:
         if row.get('expense_food_name'):
-            food_name_arr = [f.strip() for f in row.get('expense_food_name').split(',')]
-            for food in food_name_arr:
-                    frappe.db.set_value("Food Expenses", food, "expense_claim", name, update_modified=True)
-                    frappe.db.commit()
-            return {'status': 201, 'message': 'successfuly updated'}
+            frappe.db.set_value(
+                "Food Expenses",
+                row['expense_food_name'],
+                "expense_claim",
+                name,
+                update_modified=True
+            )
+            updated += 1
+
+    if updated > 0:
+        frappe.db.commit()  # optional, only if you want to force commit
+        return {'status': 201, 'message': f'Successfully updated {updated} record(s)'}
+    else:
+        return {'status': 404, 'message': 'No matching records found'}
         
         
 @frappe.whitelist()
@@ -240,7 +258,7 @@ def get_project_data_expense(project):
             `expected_start_date`,
             `expected_end_date`,
             `custom_liaison_officer`,
-            `custom_project_manager`,
+            `custom_project_mnager`,
             `custom_pettycash_amount`,
             `custom_on_behalf`
         FROM `tabProject`
@@ -310,7 +328,9 @@ def fetch_food(project, employee):
     response = frappe.db.sql(''' 
         SELECT 
             `total_sanctioned_amount`,
-            `name`
+            `name`,
+            `start_date`,
+            `end_date`
         FROM 
             `tabFood Expenses`
         WHERE
@@ -318,10 +338,10 @@ def fetch_food(project, employee):
         AND 
             `project` IS NOT NULL
         AND 
-            `employee` = %s
-        AND 
             `expense_claim` IS NULL
-    ''', (project, employee), as_dict = True)
+        AND 
+            `docstatus` = 1
+    ''', (project), as_dict = True)
 
     if not response:
         return {'status': 404, 'message': f"There are no food entries recorded."}
@@ -329,33 +349,10 @@ def fetch_food(project, employee):
         return {'status': 200, 'data': response}
 
 
+
 @frappe.whitelist()
-def fetch_petty_cahs_request_and_end(project):
-    petty_cash_request = frappe.db.sql('''
-        SELECT 
-            count(*) AS `requested`
-        FROM 
-            `tabExpense Claim` 
-        WHERE
-            `project` = %s
-        AND 
-            `custom_espense_type` = 'Project petty-cash Request'
-     ''', (project, ), as_dict = True)
-    
-    petty_cash_end = frappe.db.sql('''
-        SELECT 
-            count(*) AS `end`
-        FROM 
-            `tabExpense Claim` 
-        WHERE
-            `project` = %s
-        AND 
-            `custom_espense_type` = 'Project petty-cash End'
-        AND
-            `docstatus` = 1
-     ''', (project, ), as_dict = True)
-    
-
-    return {'status': 200, 'petty_cash_request': petty_cash_request, "petty_cash_end": petty_cash_end}
-
+def update_petty_cash(name, petty_cash):
+    frappe.db.set_value("Petty-cash", petty_cash, "custom_expense_claim", name, update_modified=True)
+    frappe.db.commit()
+    return {'status': 201, 'message':"petty cash has been updated successfuly"}
 
