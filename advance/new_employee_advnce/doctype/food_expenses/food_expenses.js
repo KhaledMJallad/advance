@@ -31,23 +31,15 @@ frappe.ui.form.on("Food Expenses", {
         }
     },
     after_workflow_action:async function(frm){
-        if(frm.doc.workflow_state === 'Rejected' || frm.doc.workflow_state === "Initiator") return;
-        add_assigend_to(frm)
+        if(frm.doc.workflow_state === "Initiator") return;
+        await get_project_data(frm)
+        console.log(project_manager)
+        await add_assigend_to(frm)
     },
 	refresh:async function(frm) {
         await get_employee_number(frm)
         if(!frm.doc.project)return;
         await get_project_data(frm)
-        if(liaison_officer === employee_number || frappe.user.has_role("System Manager")){
-            if(frappe.user.has_role("System Manager")){
-                frm.set_value('employee', liaison_officer)
-            }
-        }else{
-            frappe.throw("You are not authorized as a Liaison Officer, and therefore you do not have permission to access this page.")
-            setTimeout(() => {
-                window.history.back();
-            }, 3000)
-        }
         change_table_functionlaty(frm)
         await expsnes_details_table(frm)
         if(!frm.is_new()){
@@ -63,6 +55,17 @@ frappe.ui.form.on("Food Expenses", {
                 }
             }
 
+        }else{
+            if(liaison_officer === employee_number || frappe.user.has_role("System Manager")){
+            if(frappe.user.has_role("System Manager")){
+                frm.set_value('employee', liaison_officer)
+            }
+        }else{
+            frappe.throw("You are not authorized as a Liaison Officer, and therefore you do not have permission to access this page.")
+            setTimeout(() => {
+                window.history.back();
+            }, 3000)
+        }
         }
 	},
     start_date:function(frm){
@@ -189,7 +192,7 @@ async function get_project_data(frm){
             start_date = item.expected_start_date
             end_date = item.expected_end_date
             liaison_officer = item.custom_liaison_officer
-            project_manager = item.custom_project_manager
+            project_manager = item.custom_project_mnager
         }
     }
 }
@@ -351,6 +354,7 @@ function add_action_buttons(frm) {
 });
 }
 function petty_cash_food_popup(frm){
+        let allowed_employees = []; 
         const expenses = frm.doc.expenses || [];
         const d = new frappe.ui.Dialog({
               title: __('Food Allowance'),
@@ -373,8 +377,7 @@ function petty_cash_food_popup(frm){
                         this.set_value(null)
                         frappe.throw(`Date must be between ${frm.doc.start_date} and ${frm.doc.end_date}`)
                     }
-                    // const resp = await get_allowed_employee(frm.doc.project, this.get_value());
-                    // allowed_employees = resp.map(item => item.employee);
+                    allowed_employees = await get_allowed_employee(frm.doc.project, this.get_value());
                   }
                 },
                 { label: __('Category'), fieldname:'ctegory', fieldtype:'Select', options: ['Dinner Meal','Lunch Meal', 'breakfast', 'Dessert'],reqd:1},
@@ -443,14 +446,14 @@ function petty_cash_food_popup(frm){
                             }
                         }
                     },
-                    // get_query:function(){
-                    //     return {
-                    //       filters:{
-                    //         name: ['in', allowed_employees]
-                    //       },
-                    //       ignore_user_permissions: true
-                    //     };
-                    // }
+                    get_query:function(){
+                        return {
+                          filters:{
+                            name: ['in', allowed_employees]
+                          },
+                          ignore_user_permissions: true
+                        };
+                    }
                     },
                     { fieldtype:'Currency', fieldname:'amount', label:__('Amount'), in_list_view:1, reqd:1,
                      onchange: async function() {
@@ -589,6 +592,7 @@ async function petty_cash_food_popup_edit(frm, cdn){
     let group = null
     let invoice_no = null;
     let type = null;
+    let allowed_employees = [];
     const selected_data = expenses.filter((item) => item.name === cdn);
     selected_data.forEach((item) => {
         expense_date = item.expense_date;
@@ -605,8 +609,7 @@ async function petty_cash_food_popup_edit(frm, cdn){
             })
         }
     });
-    // let resp = await get_allowed_employee(frm.doc.project, expense_date);
-    // allowed_employees = resp.map(item => item.employee);
+    allowed_employees = await get_allowed_employee(frm.doc.project, expense_date);
     if(group){
         const group_data = expenses.filter((item) => item.group === group);
         group_data.forEach((item) => {
@@ -642,8 +645,7 @@ async function petty_cash_food_popup_edit(frm, cdn){
                         frappe.throw(`Date must be between ${frm.doc.start_date} and ${frm.doc.end_date}`)
                     }
                     
-                    // resp = await get_allowed_employee(frm.doc.project, this.get_value());
-                    // allowed_employees = resp.map(item => item.employee);
+                    allowed_employees = await get_allowed_employee(frm.doc.project, this.get_value());
                   },
                   default:expense_date
                 },
@@ -722,14 +724,14 @@ async function petty_cash_food_popup_edit(frm, cdn){
                             }
                         }
                     },
-                    // get_query:function(){
-                    //     return {
-                    //       filters:{
-                    //         name: ['in', allowed_employees]
-                    //       },
-                    //       ignore_user_permissions: true
-                    //     };
-                    // }
+                    get_query:function(){
+                        return {
+                          filters:{
+                            name: ['in', allowed_employees]
+                          },
+                          ignore_user_permissions: true
+                        };
+                    }
                     },
                     { fieldtype:'Currency', fieldname:'amount', label:__('Amount'), in_list_view:1, reqd:1,
                         onchange: async function() {
@@ -1101,4 +1103,22 @@ function show_rejected_reson(frm){
 
         dialog.show();
             
+}
+
+async function get_allowed_employee(project, date){
+    let employee = [];
+    const response = frappe.call({
+        method:"advance.new_employee_advnce.doctype.food_expenses.food_expenses.get_resorec_pool",
+        args:{project:project, date:date}
+    })
+
+    if(response.message.status === 200){
+        response.message.data.map((item) => {
+            employee.push(item.employee)
+        })
+        return employee;
+    }else{
+        frappe.throw(response.message.message)
+    }
+
 }

@@ -8,7 +8,7 @@ app_license = "mit"
 fixtures = [
       {
         "dt": "Workflow",
-        "filters": [["name", "in", ["Petty-Cash Food", "Expense Food"]]]
+        "filters": [["name", "in", ["Petty-Cash Food", "Expense Food", "Advance Flow"]]]
     },
     {
         "dt": "Workflow State",
@@ -257,6 +257,11 @@ before_uninstall = "advance.uninstall.before_uninstall"
 # default_log_clearing_doctypes = {
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
+
+
+#override_report = {
+#   "General Ledger": "advance.advance.report.custom_general_ledger.custom_general_ledger"
+#}
 
 
 

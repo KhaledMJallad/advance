@@ -6,39 +6,40 @@ from frappe.model.document import Document
 
 
 class FoodExpenses(Document):
-    def validate(self):
-        file_url = [row.invoice_image for row in self.expenses if row.invoice_image]
+   def validate(self):
+    # Collect all file urls from child table
+    file_urls = [row.invoice_image for row in self.expenses if row.invoice_image]
+    if not file_urls:
+        return
 
-        response = frappe.db.sql(''' 
-        SELECT fn.name
-        FROM `tabFile` AS fn
-        LEFT JOIN `tabFile` AS furl
-        ON fn.file_url = furl.file_url  
-        WHERE furl.file_url IN %s
-        ''', (file_url,), as_dict=True)
+    # Fetch matching file records in one query
+    response = frappe.db.sql(''' 
+        SELECT name, file_url, is_private
+        FROM `tabFile`
+        WHERE file_url IN %(file_urls)s
+    ''', {"file_urls": tuple(file_urls)}, as_dict=True)
 
-        if response:
-            for row in response:
-                file_name = row["name"]
-                old_file = frappe.get_doc("File", file_name)
+    # Existing attachments for this doc (avoid duplicates)
+    existing_files = frappe.get_all(
+        "File",
+        filters={
+            "attached_to_doctype": self.doctype,
+            "attached_to_name": self.name,
+            "file_url": ["in", file_urls]
+        },
+        pluck="file_url"
+    )
 
-                exists = frappe.db.exists(
-                "File",
-                {
-                    "file_url": old_file.file_url,
-                    "attached_to_doctype": "Food Expenses",
-                    "attached_to_name": self.name   # استخدم self.name بدل row["name"]
-                }
-                )
-
-            if not exists: 
-                frappe.get_doc({
-                    "doctype": "File",
-                    "file_url": old_file.file_url,
-                    "is_private": old_file.is_private,
-                    "attached_to_doctype": self.doctype,
-                    "attached_to_name": self.name
-                }).insert(ignore_permissions=True)
+    # Insert only missing ones
+    for row in response:
+        if row["file_url"] not in existing_files:
+            frappe.get_doc({
+                "doctype": "File",
+                "file_url": row["file_url"],
+                "is_private": row["is_private"],
+                "attached_to_doctype": self.doctype,
+                "attached_to_name": self.name
+            }).insert(ignore_permissions=True)
 
 
         		
@@ -62,36 +63,36 @@ def get_employee_number(user):
         return {'status': 200, 'data': response}
 
 
-# @frappe.whitelist()
-# def get_resorec_pool(project,start_date, to_date):
-#     response = frappe.db.select(''' 
-#     SELECT 
-#         `employee`
-#     FROM 
-#         `tabProject Assignment`
-#     WHERE 
-#         `project` = %s
-#     AND 
-#         `start_date` =%s
-#     AND 
-#         `end_date` = %s
+@frappe.whitelist()
+def get_resorec_pool(project, date):
+    response = frappe.db.sql(''' 
+    SELECT 
+        `employee`
+    FROM 
+        `tabProject Assignment`
+    WHERE 
+        `project` = %s
+    AND 
+        `start_date` >=%s
+    AND 
+        `end_date` <= %s
     
 
-#     ''', (project, start_date, to_date), as_dict=True)
-#     if not response:
-#          return {
-#             'status': 404,
-#             'message': (
-#                 "You cannot select this project because it has been completed, "
-#                 "closed, or does not exist. Please contact your system administrator "
-#                 "to resolve this issue."
-#             )
-#         }
-#     else:
-#          return {
-#             'status': 200,
-#             'data': response
-#          }
+    ''', (project, date, date, ), as_dict=True)
+    if not response:
+         return {
+            'status': 404,
+            'message': (
+                "You cannot select this project because it has been completed, "
+                "closed, or does not exist. Please contact your system administrator "
+                "to resolve this issue."
+            )
+        }
+    else:
+         return {
+            'status': 200,
+            'data': response
+         }
 @frappe.whitelist()
 def get_project_data(project_name):
     response = frappe.db.sql(''' 
@@ -99,7 +100,8 @@ def get_project_data(project_name):
             `expected_start_date`,
             `expected_end_date`,
             `custom_liaison_officer`,
-			`custom_project_manager`
+			`custom_project_mnager`,
+            `custom_pettycash_amount`
         FROM `tabProject`
         WHERE `name` = %s
         AND `status` = 'Open'
@@ -215,11 +217,9 @@ def assign_food_expenses(workflow_state, project_manager, name):
     clear_email = []
 
     for row in response:
-        # ❌ Skip admin
         if row['email'] == 'admin@example.com':
             continue
 
-        # ❌ Skip Project Manager role → instead use the one you pass in
         if row['allowed'] == 'Projects Manager':
             project_mgr_user = frappe.db.sql('''
                 SELECT user_id 
@@ -265,7 +265,7 @@ def assign_food_expenses(workflow_state, project_manager, name):
         todo_doc.insert(ignore_permissions=True)
 
         # Share the document with the user
-        frappe.share.add("Food Expenses", name, row['email'], read=1, write=0)
+        frappe.share.add("Food Expenses", name, row['email'], read=1, write=1)
 
         created.append(row['email'])
 
