@@ -61,5 +61,14 @@
   "name": "Project Manager",
   "style": "",
   "workflow_state_name": "Project Manager"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-08-26 15:17:39.604379",
+  "name": "Accountant Submit",
+  "style": "",
+  "workflow_state_name": "Accountant Submit"
  }
 ]
