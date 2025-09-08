@@ -2,6 +2,15 @@
  {
   "docstatus": 0,
   "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-09-08 14:13:32.087021",
+  "name": "unpaid",
+  "style": "Danger",
+  "workflow_state_name": "unpaid"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
   "icon": "ok-sign",
   "modified": "2025-04-20 12:56:21.887983",
   "name": "Approved",
@@ -16,6 +25,15 @@
   "name": "Rejected",
   "style": "Danger",
   "workflow_state_name": "Rejected"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-07-29 15:08:12.535640",
+  "name": "Initiator",
+  "style": "",
+  "workflow_state_name": "Initiator"
  },
  {
   "docstatus": 0,
@@ -43,15 +61,6 @@
   "name": "Supporting Services Director",
   "style": "",
   "workflow_state_name": "Supporting Services Director"
- },
- {
-  "docstatus": 0,
-  "doctype": "Workflow State",
-  "icon": "",
-  "modified": "2025-07-29 15:08:12.535640",
-  "name": "Initiator",
-  "style": "",
-  "workflow_state_name": "Initiator"
  },
  {
   "docstatus": 0,
