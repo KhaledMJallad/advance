@@ -62,7 +62,7 @@ frappe.ui.form.on('Expense Claim', {
             if(frappe.user.has_role("System Manager")){
                 frm.set_df_property('employee', 'read_only', true)
                 frm.set_df_property('expense_approver', 'read_only', true)
-                frm.set_value('employee', liaison_officer)
+                frm.set_value('employee', on_behalf)
                 await get_project_manager_email(frm)
                 await get_project_advance(frm)
                 frm.set_value('expense_approver', project_manager_email)
@@ -79,7 +79,7 @@ frappe.ui.form.on('Expense Claim', {
                 if(employee === liaison_officer){
                     frm.set_df_property('employee', 'read_only', true)
                     frm.set_df_property('expense_approver', 'read_only', true)
-                    frm.set_value('employee', liaison_officer)
+                    frm.set_value('employee', on_behalf)
                     await get_project_manager_email(frm)
                     await get_project_advance(frm)
                     frm.set_value('expense_approver', project_manager_email)
