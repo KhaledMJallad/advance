@@ -38,7 +38,7 @@ def create_new_advance(name, petty_cash_amount, employee, project, company):
         advance.employee = employee
         advance.advance_amount = float(str(petty_cash_amount).replace(",", ""))
         advance.exchange_rate = 1
-        advance.advance_account = '5200 - Indirect Expenses - TD'
+        advance.advance_account = '1620 - Petty Cash - iKSA'
         advance.company = company
         advance.currency = 'JOD'
         advance.posting_date = frappe.utils.nowdate()
