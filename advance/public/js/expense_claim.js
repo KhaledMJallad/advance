@@ -3,7 +3,7 @@ let project_manager = null;
 let on_behalf = null;
 let employee = null;
 let project_manager_email = null;
-let payable_account = '2110 - Creditors - TD';
+let payable_account = '1620 - Petty Cash - iKSA';
 frappe.ui.form.on('Expense Claim', {
     after_save:async function(frm){
         await update_petty_cash(frm)
