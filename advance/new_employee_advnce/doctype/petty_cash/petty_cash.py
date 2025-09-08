@@ -40,7 +40,6 @@ def create_new_advance(name, petty_cash_amount, employee, project, company):
         advance.exchange_rate = 1
         advance.advance_account = '1620 - Petty Cash - iKSA'
         advance.company = company
-        advance.currency = 'JOD'
         advance.posting_date = frappe.utils.nowdate()
         advance.purpose = "Request for Initial Petty Cash Float"
         advance.custom_project = project
