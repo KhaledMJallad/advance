@@ -73,9 +73,9 @@ def get_resorec_pool(project, date):
     WHERE 
         `project` = %s
     AND 
-        `start_date` >=%s
+        `start_date` <=%s
     AND 
-        `end_date` <= %s
+        `end_date` >= %s
     
 
     ''', (project, date, date, ), as_dict=True)
