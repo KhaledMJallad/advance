@@ -22,6 +22,15 @@
    "reqd": 1
   },
   {
+   "fieldname": "on_behalf",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "On Behalf",
+   "options": "Employee",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
    "fieldname": "project",
    "fieldtype": "Link",
    "in_list_view": 1,
