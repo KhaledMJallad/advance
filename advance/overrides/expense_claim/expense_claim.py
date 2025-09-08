@@ -9,6 +9,12 @@ class CustomExpenseClaim(ExpenseClaim):
 
 
 @frappe.whitelist()
+def force_to_save(name):
+    doc =  frappe.get_doc('Expense Claim', name)
+    doc.insert(ignore_permissions=True)
+    return {"status": 201, 'message': "data has been saved successfuly"}
+
+@frappe.whitelist()
 def share_with_and_assign_to(workflow_state, project_manager, name):
     response = frappe.db.sql('''
         SELECT DISTINCT u.email, wft.allowed
@@ -168,7 +174,6 @@ def create_advance(name ,employee, petty_cash_amount, project, company, petty_ca
         advance.custom_project = project
 
         advance.insert(ignore_permissions=True)
-        advance.submit()
 
         frappe.db.set_value("Expense Claim", name, "custom_advance", advance.name)
         frappe.db.set_value("Petty-cash", petty_cash, "custom_advance", advance.name)

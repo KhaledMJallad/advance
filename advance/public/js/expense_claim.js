@@ -10,7 +10,6 @@ frappe.ui.form.on('Expense Claim', {
         await share_file(frm)
     },
     after_workflow_action:async function(frm){
-        debugger;
         if(frm.doc.workflow_state === "Approved" && (frm.doc.custom_espense_type === "Replenishment" || frm.doc.custom_espense_type === "Project petty-cash End")){
             await update_food(frm)
         }
@@ -151,7 +150,7 @@ frappe.ui.form.on("Expense Claim Detail", {
                     window.open(url, "_blank");
                 }
             });
-    }
+    },
 });
 
 
@@ -163,12 +162,10 @@ async function change_doc_type_status(frm){
 }
 
 async function cahnge_expenses_to_lission_officer(frm){
-    console.log(liaison_officer)
      const response = frappe.call({
         method:"advance.overrides.expense_claim.expense_claim.change_to_lission_officer",
         args:{name:frm.doc.name, liaison_officer:liaison_officer}
     })
-    console.log(response)
 }
 
 async function change_employee_to_on_on_behalf(frm){
@@ -215,7 +212,6 @@ async function share_file(frm){
 }
 
 async function create_new_advance(frm, petty_cahs_amount_data){
-    debugger;
     const response = frappe.call({
         method:"advance.overrides.expense_claim.expense_claim.create_advance",
         args:{
@@ -433,15 +429,12 @@ async function get_all_advances(frm){
 }
 
 async function update_petty_cash(frm){
-    console.log(frm.doc.custom_pettycash)
-    console.log(frm.doc.name)
     frappe.call({
         method:"advance.overrides.expense_claim.expense_claim.update_petty_cash",
         args:{name:frm.doc.name, petty_cash:frm.doc.custom_pettycash},
         freeze: true,
         freeze_message: __("Updating petty-cash. Please waite..."),
         callback: function(r) {
-            console.log(r)
         if (r.message.status === 201) {
             frappe.show_alert({
                 message: __("File linked successfully"),
