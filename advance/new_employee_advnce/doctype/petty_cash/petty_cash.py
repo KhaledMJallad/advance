@@ -46,7 +46,7 @@ def create_new_advance(name, petty_cash_amount, employee, project, company):
         advance.custom_project = project
 
         advance.insert(ignore_permissions=True)
-        advance.submit()
+
 
         frappe.db.set_value("Petty-cash", name, "custom_advance", advance.name)
         frappe.db.commit()
