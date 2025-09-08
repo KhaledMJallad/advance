@@ -5,6 +5,7 @@
 let requested_petty_cash = 0;
 let ended_petty_cash = 0;
 let petty_cash_amount = 0;
+let custom_on_behalf = null;
 let requested_and_ended_petty_cash = {};
 frappe.ui.form.on("Petty-cash", {
     on_submit:async function(frm){
@@ -37,11 +38,13 @@ frappe.ui.form.on("Petty-cash", {
             requested_and_ended_petty_cash = await fetch_requested_and_end_petty_cash(frm)
             if(frappe.user.has_role("System Manager")){
                 frm.set_value('liaison_officer', liaison_officer);
+				frm.set_value('on_behalf', custom_on_behalf);
             }else{
                 let employee_number = null;
                 employee_number = await get_employee_number(frm);
                 if(employee_number === liaison_officer){
                     frm.set_value('liaison_officer',employee_number)
+					frm.set_value('on_behalf', custom_on_behalf);
                 }else{
                     frappe.throw("You do not have permission to access this page. Please contact your system administrator to resolve this issue.")
                 }
@@ -80,7 +83,8 @@ async function get_liaison_officer(frm){
     }else{
         response.message.data.map((item) => {
             liaison_officer = item.custom_liaison_officer;
-            petty_cash_amount = item.custom_pettycash_amount
+            petty_cash_amount = item.custom_pettycash_amount;
+			custom_on_behalf = item.custom_on_behalf;
         });
 
         return liaison_officer;
