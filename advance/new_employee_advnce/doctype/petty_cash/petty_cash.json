@@ -22,15 +22,6 @@
    "reqd": 1
   },
   {
-   "fieldname": "on_behalf",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "On Behalf",
-   "options": "Employee",
-   "read_only": 1,
-   "reqd": 1
-  },
-  {
    "fieldname": "project",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -60,7 +51,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-09-07 14:55:36.866336",
+ "modified": "2025-09-08 18:59:02.240928",
  "modified_by": "Administrator",
  "module": "new Employee Advnce",
  "name": "Petty-cash",

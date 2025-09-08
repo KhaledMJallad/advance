@@ -82,11 +82,7 @@ def get_resorec_pool(project, date):
     if not response:
          return {
             'status': 404,
-            'message': (
-                "You cannot select this project because it has been completed, "
-                "closed, or does not exist. Please contact your system administrator "
-                "to resolve this issue."
-            )
+            'message': "No resources have been allocated for this project."
         }
     else:
          return {
@@ -132,6 +128,7 @@ def get_expenses_food(project ,start_date, end_date):
 	WHERE `project` = %s 
 	AND `start_date` >= %s 
 	AND `end_date` <= %s
+    AND `docstatus` = 1
 	''', (project, start_date, end_date), as_dict=True)
       
 	if not response:

@@ -12,7 +12,7 @@ fixtures = [
     },
     {
         "dt": "Workflow State",
-        "filters": [["workflow_state_name", "in", ["Initiator", "Project Manager", "Accountant", "CFO", "Supporting Services Director", "Approved", "Rejected", "Accountant Submit", "unpaid"]]]
+        "filters": [["workflow_state_name", "in", ["Initiator", "Project Manager", "Accountant", "CFO", "Supporting Services Director", "Approved", "Rejected", "Accountant Submit", "unpaid", "paid"]]]
     },
     {"dt": "DocType", "filters": [["name", "=", "Expense Claim Detail"]]}
 ]
@@ -48,7 +48,7 @@ fixtures = [
 # website_theme_scss = "advance/public/scss/website"
 
 # include js, css files in header of web form
-# webform_include_js = {"doctype": "public/js/doctype.js"}
+# webform_include_js = {"doctype": "public/js/doctype.js"}	
 # webform_include_css = {"doctype": "public/css/doctype.css"}
 
 # include js in page
@@ -59,7 +59,8 @@ doctype_js = {
 
 	"Employee Advance" : "public/js/employee_advance.js",
 	"Expense Claim" : "public/js/expense_claim.js",
-	"Project" :"public/js/Project.js"
+	"Project" :"public/js/Project.js",
+	"Payment Entry":"public/js/payment_entry.js"
 
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}

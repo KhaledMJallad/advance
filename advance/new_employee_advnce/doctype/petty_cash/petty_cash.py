@@ -17,7 +17,6 @@ def get_lision_officer(project):
 	response = frappe.db.sql(''' 
 		SELECT 
 			`custom_liaison_officer`,
-   			'custom_on_behalf',
 			`custom_pettycash_amount`
 		FROM
 			`tabProject`
@@ -39,7 +38,7 @@ def create_new_advance(name, petty_cash_amount, employee, project, company):
         advance.employee = employee
         advance.advance_amount = float(str(petty_cash_amount).replace(",", ""))
         advance.exchange_rate = 1
-        advance.advance_account = '1620 - Petty Cash - iKSA'
+        advance.advance_account = '1620 - Petty-cash - TD'
         advance.company = company
         advance.posting_date = frappe.utils.nowdate()
         advance.purpose = "Request for Initial Petty Cash Float"
