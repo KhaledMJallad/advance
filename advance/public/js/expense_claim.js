@@ -13,14 +13,14 @@ frappe.ui.form.on('Expense Claim', {
         if(frm.doc.workflow_state === "Approved" && (frm.doc.custom_espense_type === "Replenishment" || frm.doc.custom_espense_type === "Project petty-cash End")){
             await update_food(frm)
         }
-        await get_project_data(frm)
-        if(frm.doc.employee !== on_behalf && frm.doc.workflow_state !== "Initiator"){
-            await change_employee_to_on_on_behalf(frm)
-            frm.save(); 
-        }else if(frm.doc.workflow_state === "Initiator" && frm.doc.employee !== liaison_officer){
-            await cahnge_expenses_to_lission_officer(frm)
-            frm.save(); 
-        }
+        // await get_project_data(frm)
+        // if(frm.doc.employee !== on_behalf && frm.doc.workflow_state !== "Initiator"){
+        //     await change_employee_to_on_on_behalf(frm)
+        //     frm.save(); 
+        // }else if(frm.doc.workflow_state === "Initiator" && frm.doc.employee !== liaison_officer){
+        //     await cahnge_expenses_to_lission_officer(frm)
+        //     frm.save(); 
+        // }
         if(frm.doc.workflow_state === 'Rejected' || frm.doc.workflow_state === "Initiator") return;
             add_assigend_to(frm)
     },
