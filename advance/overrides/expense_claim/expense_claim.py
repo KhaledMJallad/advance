@@ -161,9 +161,8 @@ def create_advance(name ,employee, petty_cash_amount, project, company, petty_ca
         advance.employee = employee
         advance.advance_amount = float(str(petty_cash_amount).replace(",", ""))
         advance.exchange_rate = 1
-        advance.advance_account = '5200 - Indirect Expenses - TD'
+        advance.advance_account = '1620 - Petty Cash - iKSA'
         advance.company = company
-        advance.currency = 'JOD'
         advance.posting_date = frappe.utils.nowdate()
         advance.purpose = "Project petty-cash Request"
         advance.custom_project = project
@@ -258,7 +257,7 @@ def get_project_data_expense(project):
             `expected_start_date`,
             `expected_end_date`,
             `custom_liaison_officer`,
-            `custom_project_mnager`,
+            `project_manager`,
             `custom_pettycash_amount`,
             `custom_on_behalf`
         FROM `tabProject`
