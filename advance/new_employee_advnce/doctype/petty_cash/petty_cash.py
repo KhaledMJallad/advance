@@ -17,6 +17,7 @@ def get_lision_officer(project):
 	response = frappe.db.sql(''' 
 		SELECT 
 			`custom_liaison_officer`,
+   			'custom_on_behalf',
 			`custom_pettycash_amount`
 		FROM
 			`tabProject`
