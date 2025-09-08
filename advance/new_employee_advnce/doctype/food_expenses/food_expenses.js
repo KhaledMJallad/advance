@@ -1107,7 +1107,7 @@ function show_rejected_reson(frm){
 
 async function get_allowed_employee(project, date){
     let employee = [];
-    const response = frappe.call({
+    const response = await frappe.call({
         method:"advance.new_employee_advnce.doctype.food_expenses.food_expenses.get_resorec_pool",
         args:{project:project, date:date}
     })
