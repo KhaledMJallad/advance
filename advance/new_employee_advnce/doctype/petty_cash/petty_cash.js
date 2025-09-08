@@ -132,7 +132,7 @@ async function fetch_requested_and_end_petty_cash(frm){
 async function create_advance_auto(frm, petty_cash){
     frappe.call({
         method:"advance.new_employee_advnce.doctype.petty_cash.petty_cash.create_new_advance",
-        args:{name:frm.doc.name, petty_cash_amount:petty_cash, employee:frm.doc.liaison_officer, project:frm.doc.project, company:frm.doc.custom_company},
+        args:{name:frm.doc.name, petty_cash_amount:petty_cash, employee:frm.doc.on_behalf, project:frm.doc.project, company:frm.doc.custom_company},
         freeze: true,
         freeze_message: __("Create Advance, Please waite..."),
         callback:function(resp){
