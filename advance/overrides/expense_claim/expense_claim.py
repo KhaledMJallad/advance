@@ -167,7 +167,7 @@ def create_advance(name ,employee, petty_cash_amount, project, company, petty_ca
         advance.employee = employee
         advance.advance_amount = float(str(petty_cash_amount).replace(",", ""))
         advance.exchange_rate = 1
-        advance.advance_account = '1620 - Petty-cash - TD'
+        advance.advance_account = '1620 - Petty Cash - iKSA'
         advance.company = company
         advance.posting_date = frappe.utils.nowdate()
         advance.purpose = "Project petty-cash Request"

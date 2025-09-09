@@ -3,7 +3,7 @@ let project_manager = null;
 let on_behalf = null;
 let employee = null;
 let project_manager_email = null;
-let payable_account = '1620 - Petty-cash - TD';
+let payable_account = '1620 - Petty Cash - iKSA';
 let repeted = 0;
 frappe.ui.form.on('Expense Claim', {
     after_save:async function(frm){
@@ -292,7 +292,7 @@ async function food_poopup(frm){
                             frappe.model.set_value(row.doctype, row.name, "amount", parseFloat(amt));
                             frappe.model.set_value(row.doctype, row.name, "expense_food_name", name);
                             frappe.model.set_value(row.doctype, row.name, "description", 'Petty cash Food');
-                            frappe.model.set_value(row.doctype, row.name, "expense_type", '5224 - Hospitality Expenses - iKSA');
+                            frappe.model.set_value(row.doctype, row.name, "expense_type", 'Hospitality Expenses');
                             frappe.model.set_value(row.doctype, row.name, "invoice_no", '0000000');
                             frappe.model.set_value(row.doctype, row.name, "invoice_image", "You Can't add image to this");
                             frm.refresh_field("expenses")                            
