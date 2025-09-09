@@ -47,41 +47,9 @@ def create_new_advance(name, petty_cash_amount, employee, project, company, proj
 
         advance.insert(ignore_permissions=True)
 
-
-
-        project_manager_email = frappe.db.sql(''' 
-            SELECT 
-                `user_id`
-            FROM 
-                `tabEmployee`
-            WHERE 
-                `name` = %s
-            AND 
-                `status` = 'Active'
-        ''', (project_manager, ), as_dict = True)
-        if project_manager_email:
-            user_id = project_manager_email[0].user_id
-            frappe.get_doc({
-                "doctype": "ToDo",
-                "description": f"Review Advance {advance.name}",
-                "reference_type": "Employee Advance",
-                "reference_name": advance.name,
-                "allocated_to": user_id,   # user to assign
-                "status": "Open",
-                "priority": "Medium"
-            }).insert(ignore_permissions=True)
-
-            frappe.share.add(
-                doctype="Employee Advance",
-                name=advance.name,
-                user=user_id,   # user to share with
-                read=1,
-                write=1,
-                share=1
-            )
-
-        frappe.db.set_value("Petty-cash", name, "custom_advance", advance.name)
+		frappe.db.set_value("Petty-cash", name, "custom_advance", advance.name)
         frappe.db.commit()
+
 
         return {"status": 201, "advance": advance.name}
 
