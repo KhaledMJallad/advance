@@ -3,7 +3,7 @@ let project_manager = null;
 let on_behalf = null;
 let employee = null;
 let project_manager_email = null;
-let payable_account = '1620 - Petty-cash - TD';
+let payable_account = '1620 - Petty Cash - iKSA';
 let repeted = 0;
 frappe.ui.form.on('Expense Claim', {
     after_save:async function(frm){
