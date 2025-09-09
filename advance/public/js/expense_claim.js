@@ -292,7 +292,7 @@ async function food_poopup(frm){
                             frappe.model.set_value(row.doctype, row.name, "amount", parseFloat(amt));
                             frappe.model.set_value(row.doctype, row.name, "expense_food_name", name);
                             frappe.model.set_value(row.doctype, row.name, "description", 'Petty cash Food');
-                            frappe.model.set_value(row.doctype, row.name, "expense_type", '5224 - Hospitality Expenses - iKSA');
+                            frappe.model.set_value(row.doctype, row.name, "expense_type", 'Hospitality Expenses');
                             frappe.model.set_value(row.doctype, row.name, "invoice_no", '0000000');
                             frappe.model.set_value(row.doctype, row.name, "invoice_image", "You Can't add image to this");
                             frm.refresh_field("expenses")                            
