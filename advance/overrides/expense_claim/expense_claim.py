@@ -161,7 +161,7 @@ def image_show(expenses, name):
     return {'status': 201, 'message': 'Files have been shared successfully'}
 
 @frappe.whitelist()
-def create_advance(name ,employee, petty_cash_amount, project, company, petty_cash, project_manager):
+def create_advance(name ,employee, petty_cash_amount, project, company, petty_cash):
     try:
         advance = frappe.new_doc("Employee Advance")
         advance.employee = employee
