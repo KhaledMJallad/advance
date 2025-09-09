@@ -3,7 +3,8 @@ let project_manager = null;
 let on_behalf = null;
 let employee = null;
 let project_manager_email = null;
-let payable_account = '1620 - Petty Cash - iKSA';
+let payable_account = '1620 - Petty-cash - TD';
+let repeted = 0;
 frappe.ui.form.on('Expense Claim', {
     after_save:async function(frm){
         await update_petty_cash(frm)
@@ -13,17 +14,10 @@ frappe.ui.form.on('Expense Claim', {
         if(frm.doc.workflow_state === "Approved" && (frm.doc.custom_espense_type === "Replenishment" || frm.doc.custom_espense_type === "Project petty-cash End")){
             await update_food(frm)
         }
-        // await get_project_data(frm)
-        // if(frm.doc.employee !== on_behalf && frm.doc.workflow_state !== "Initiator"){
-        //     await change_employee_to_on_on_behalf(frm)
-        //     frm.save(); 
-        // }else if(frm.doc.workflow_state === "Initiator" && frm.doc.employee !== liaison_officer){
-        //     await cahnge_expenses_to_lission_officer(frm)
-        //     frm.save(); 
-        // }
         if(frm.doc.workflow_state === 'Rejected' || frm.doc.workflow_state === "Initiator") return;
             add_assigend_to(frm)
     },
+
 
     before_workflow_action: async function (frm) {
         if(frm.selected_workflow_action === 'Reject'){
@@ -44,9 +38,7 @@ frappe.ui.form.on('Expense Claim', {
                 );
             });
         }
-        if(frm.doc.custom_rejected_reason){
-            frm.set_value('custom_rejected_reason', null);
-        }
+
 
        if(frm.doc.custom_espense_type === 'Replenishment' && (frm.selected_workflow_action  === "Approve" && frm.doc.workflow_state === "Accountant Submit")){
 
@@ -60,14 +52,17 @@ frappe.ui.form.on('Expense Claim', {
             if(!frm.doc.project) return;
             await get_project_data(frm);
             if(frappe.user.has_role("System Manager")){
+                if(!frm.doc.payable_account){
+                    frm.set_value('payable_account', payable_account)
+                }
+                frm.set_df_property('payable_account', 'read_only', false)
                 frm.set_df_property('employee', 'read_only', true)
                 frm.set_df_property('expense_approver', 'read_only', true)
+                
                 frm.set_value('employee', on_behalf)
                 await get_project_manager_email(frm)
                 await get_project_advance(frm)
                 frm.set_value('expense_approver', project_manager_email)
-                frm.clear_table("expenses");
-                frm.refresh_field("expenses");
                 if(frm.doc.custom_espense_type === "Replenishment"){
                     frm.add_custom_button("Fetch Food", () => {
                         food_poopup(frm)
@@ -77,14 +72,17 @@ frappe.ui.form.on('Expense Claim', {
             }else{
                 await get_employee_number(frm);
                 if(employee === liaison_officer){
+                    if(!frm.doc.payable_account){
+                        frm.set_value('payable_account', payable_account)
+                    }
+       
+                    frm.set_df_property('payable_account', 'read_only', true)
                     frm.set_df_property('employee', 'read_only', true)
                     frm.set_df_property('expense_approver', 'read_only', true)
                     frm.set_value('employee', on_behalf)
                     await get_project_manager_email(frm)
                     await get_project_advance(frm)
                     frm.set_value('expense_approver', project_manager_email)
-                    frm.clear_table("expenses");
-                    frm.refresh_field("expenses");
                     if(frm.doc.custom_espense_type === "Replenishment"){
                     frm.add_custom_button("Fetch Food", () => {
                         food_poopup(frm)
@@ -97,11 +95,12 @@ frappe.ui.form.on('Expense Claim', {
                 }
             }   
         }else{
-            if(frappe.user.has_role('Accounts User')){
-                frm.set_df_property(payable_account, 'read_only', false)
-                if(!frm.doc.payable_account){
-                    frm.set_value('payable_account', payable_account)
-                }
+            if((employee === liaison_officer && frappe.user.has_role("System Manager")) &&  frm.doc.custom_rejected_reason){
+                show_rejected_reson(frm);
+            } 
+            if(frappe.user.has_role('Accounts User') || frappe.user.has_role('System Manager')){
+                frm.set_df_property('payable_account', 'read_only', false)
+                
             }else{
                 frm.set_df_property(payable_account, 'read_only', true)
             }
@@ -180,9 +179,6 @@ async function add_assigend_to(frm){
         args:{workflow_state:frm.doc.workflow_state, name:frm.doc.name, project_manager:project_manager}
     })
 
-    if(response.message.status === 404){
-        frappe.throw(response.message.message)
-    }
 }
 
 async function share_file(frm){
@@ -254,7 +250,10 @@ async function food_poopup(frm){
     let expenses = frm.doc.expenses;
     let food_expenses = await fetch_food_expenses(frm);
     if(food_expenses.length === 0){
-            frappe.throw('there is on food has been created.')
+            frappe.show_alert({
+            message: __("There is no food has been created."),
+            indicator: 'yellow'
+        }); // 5 seconds
     }
 
     if(expenses.length > 0){
@@ -334,7 +333,6 @@ async function get_project_manager_email(frm){
         args:{epmloyee:project_manager}
     });
     if(response.message.status === 404){
-        frappe.throw(response.message.message)
     }else{
         response.message.data.map((item) => {
             project_manager_email = item.user_id
@@ -388,7 +386,7 @@ async function fetch_food_expenses(frm){
     });
 
     if(response.message.status === 404){
-        frappe.throw(response.message.message)
+           frappe.msgprint(response.message.message)
     }else{
 
         response.message.data.map((item) => {
@@ -454,6 +452,8 @@ async function update_petty_cash(frm){
 }
 
 function show_rejected_reson(frm){
+    debugger;
+    if (repeted === 1) return;
     const dialog = new frappe.ui.Dialog({
             title: __('Notice'),
             fields: [
@@ -465,14 +465,14 @@ function show_rejected_reson(frm){
                             </div>`
                 }
             ],
-            primary_action_label: __('OK'),
-            primary_action: () =>{
-                frm.set_value('custom_rejected_reason', null);
-                dialog.hide();
-            },
+            primary_action_label: null,
             secondary_action: null
         });
 
         dialog.show();
+
+        repeted = 1;
             
 }
+
+

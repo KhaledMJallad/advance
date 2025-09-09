@@ -161,19 +161,20 @@ def image_show(expenses, name):
     return {'status': 201, 'message': 'Files have been shared successfully'}
 
 @frappe.whitelist()
-def create_advance(name ,employee, petty_cash_amount, project, company, petty_cash):
+def create_advance(name ,employee, petty_cash_amount, project, company, petty_cash, project_manager):
     try:
         advance = frappe.new_doc("Employee Advance")
         advance.employee = employee
         advance.advance_amount = float(str(petty_cash_amount).replace(",", ""))
         advance.exchange_rate = 1
-        advance.advance_account = '1620 - Petty Cash - iKSA'
+        advance.advance_account = '1620 - Petty-cash - TD'
         advance.company = company
         advance.posting_date = frappe.utils.nowdate()
         advance.purpose = "Project petty-cash Request"
         advance.custom_project = project
 
         advance.insert(ignore_permissions=True)
+        advance.submit()
 
         frappe.db.set_value("Expense Claim", name, "custom_advance", advance.name)
         frappe.db.set_value("Petty-cash", petty_cash, "custom_advance", advance.name)
@@ -207,6 +208,13 @@ def update_food(expenses, name):
                 row['expense_food_name'],
                 "expense_claim",
                 name,
+                update_modified=True
+            )
+            frappe.db.set_value(
+                "Food Expenses",
+                row['expense_food_name'],
+                'workflow_state',
+                'paid',
                 update_modified=True
             )
             updated += 1
@@ -359,4 +367,7 @@ def update_petty_cash(name, petty_cash):
     frappe.db.set_value("Petty-cash", petty_cash, "custom_expense_claim", name, update_modified=True)
     frappe.db.commit()
     return {'status': 201, 'message':"petty cash has been updated successfuly"}
+
+
+
 

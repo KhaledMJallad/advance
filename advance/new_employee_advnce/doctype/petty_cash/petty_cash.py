@@ -17,7 +17,8 @@ def get_lision_officer(project):
 	response = frappe.db.sql(''' 
 		SELECT 
 			`custom_liaison_officer`,
-			`custom_pettycash_amount`
+			`custom_pettycash_amount`,
+            `project_manager`
 		FROM
 			`tabProject`
 		WHERE 
@@ -32,13 +33,13 @@ def get_lision_officer(project):
 		return{'status':200, 'data': response}
 	
 @frappe.whitelist()
-def create_new_advance(name, petty_cash_amount, employee, project, company):
+def create_new_advance(name, petty_cash_amount, employee, project, company, project_manager):
     try:
         advance = frappe.new_doc("Employee Advance")
         advance.employee = employee
         advance.advance_amount = float(str(petty_cash_amount).replace(",", ""))
         advance.exchange_rate = 1
-        advance.advance_account = '1620 - Petty Cash - iKSA'
+        advance.advance_account = '1620 - Petty-cash - TD'
         advance.company = company
         advance.posting_date = frappe.utils.nowdate()
         advance.purpose = "Request for Initial Petty Cash Float"
@@ -46,6 +47,38 @@ def create_new_advance(name, petty_cash_amount, employee, project, company):
 
         advance.insert(ignore_permissions=True)
 
+
+
+        project_manager_email = frappe.db.sql(''' 
+            SELECT 
+                `user_id`
+            FROM 
+                `tabEmployee`
+            WHERE 
+                `name` = %s
+            AND 
+                `status` = 'Active'
+        ''', (project_manager, ), as_dict = True)
+        if project_manager_email:
+            user_id = project_manager_email[0].user_id
+            frappe.get_doc({
+                "doctype": "ToDo",
+                "description": f"Review Advance {advance.name}",
+                "reference_type": "Employee Advance",
+                "reference_name": advance.name,
+                "allocated_to": user_id,   # user to assign
+                "status": "Open",
+                "priority": "Medium"
+            }).insert(ignore_permissions=True)
+
+            frappe.share.add(
+                doctype="Employee Advance",
+                name=advance.name,
+                user=user_id,   # user to share with
+                read=1,
+                write=1,
+                share=1
+            )
 
         frappe.db.set_value("Petty-cash", name, "custom_advance", advance.name)
         frappe.db.commit()

@@ -51,7 +51,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-09-08 18:59:02.240928",
+ "modified": "2025-09-09 15:04:29.996187",
  "modified_by": "Administrator",
  "module": "new Employee Advnce",
  "name": "Petty-cash",
@@ -59,6 +59,8 @@
  "owner": "Administrator",
  "permissions": [
   {
+   "amend": 1,
+   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
