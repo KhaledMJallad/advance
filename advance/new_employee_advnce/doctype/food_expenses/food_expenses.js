@@ -42,9 +42,10 @@ frappe.ui.form.on("Food Expenses", {
         if(!frm.doc.project)return;
         await get_project_data(frm)
         change_table_functionlaty(frm)
-        await expsnes_details_table(frm)
+		
         if(!frm.is_new()){
             coloring_table(frm)
+        	await expsnes_details_table(frm)
             if(frm.doc.custom_rejected_reason &&  (liaison_officer === employee_number || frappe.user.has_role("System Manager"))){
                 show_rejected_reson(frm)
             }
