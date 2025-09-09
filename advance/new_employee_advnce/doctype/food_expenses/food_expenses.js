@@ -173,7 +173,9 @@ async function get_employee_number(frm){
    }else{
         response.message.data.forEach(item => employee = item.name)
         employee_number = employee;
-        // frm.set_value('employee', employee)
+	   if(frm.is_new()){
+        	frm.set_value('employee', employee)
+	   }
    }
 }
 async function get_project_data(frm){
