@@ -63,7 +63,7 @@ frappe.ui.form.on('Expense Claim', {
                 await get_project_manager_email(frm)
                 await get_project_advance(frm)
                 frm.set_value('expense_approver', project_manager_email)
-                if(frm.doc.custom_espense_type === "Replenishment"){
+                if(frm.doc.custom_espense_type === "Replenishment" || frm.doc.custom_espense_type === "Petty-cash Project End"){
                     frm.add_custom_button("Fetch Food", () => {
                         food_poopup(frm)
                     
@@ -83,7 +83,7 @@ frappe.ui.form.on('Expense Claim', {
                     await get_project_manager_email(frm)
                     await get_project_advance(frm)
                     frm.set_value('expense_approver', project_manager_email)
-                    if(frm.doc.custom_espense_type === "Replenishment"){
+                    if(frm.doc.custom_espense_type === "Replenishment" || frm.doc.custom_espense_type === "Petty-cash Project End"){
                     frm.add_custom_button("Fetch Food", () => {
                         food_poopup(frm)
                     
