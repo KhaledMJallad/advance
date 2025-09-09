@@ -11,6 +11,15 @@
  {
   "docstatus": 0,
   "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-09-08 18:17:18.077727",
+  "name": "paid",
+  "style": "Success",
+  "workflow_state_name": "paid"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
   "icon": "ok-sign",
   "modified": "2025-04-20 12:56:21.887983",
   "name": "Approved",
@@ -25,15 +34,6 @@
   "name": "Rejected",
   "style": "Danger",
   "workflow_state_name": "Rejected"
- },
- {
-  "docstatus": 0,
-  "doctype": "Workflow State",
-  "icon": "",
-  "modified": "2025-07-29 15:08:12.535640",
-  "name": "Initiator",
-  "style": "",
-  "workflow_state_name": "Initiator"
  },
  {
   "docstatus": 0,
@@ -66,18 +66,27 @@
   "docstatus": 0,
   "doctype": "Workflow State",
   "icon": "",
-  "modified": "2025-07-17 15:45:35.043986",
-  "name": "Project Manager",
+  "modified": "2025-08-26 15:17:39.604379",
+  "name": "Accountant Submit",
   "style": "",
-  "workflow_state_name": "Project Manager"
+  "workflow_state_name": "Accountant Submit"
  },
  {
   "docstatus": 0,
   "doctype": "Workflow State",
   "icon": "",
-  "modified": "2025-08-26 15:17:39.604379",
-  "name": "Accountant Submit",
+  "modified": "2025-07-29 15:08:12.535640",
+  "name": "Initiator",
   "style": "",
-  "workflow_state_name": "Accountant Submit"
+  "workflow_state_name": "Initiator"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-07-17 15:45:35.043986",
+  "name": "Project Manager",
+  "style": "",
+  "workflow_state_name": "Project Manager"
  }
 ]

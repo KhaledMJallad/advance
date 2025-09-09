@@ -3,6 +3,7 @@
 
 
 let requested_petty_cash = 0;
+let project_manager = null;
 let ended_petty_cash = 0;
 let petty_cash_amount = 0;
 let requested_and_ended_petty_cash = {};
@@ -10,7 +11,8 @@ frappe.ui.form.on("Petty-cash", {
     on_submit:async function(frm){
         switch(frm.doc.petty_cash_type){
             case "Initial Petty cash Float":
-                await create_advance_auto(frm, petty_cash_amount);
+                await get_liaison_officer(frm)
+                await create_advance_auto(frm, petty_cash_amount, project_manager);
                 frm.reload_doc();
             break;
             default:
@@ -82,8 +84,8 @@ async function get_liaison_officer(frm){
         response.message.data.map((item) => {
             liaison_officer = item.custom_liaison_officer;
             petty_cash_amount = item.custom_pettycash_amount;
+            project_manager = item.project_manager
         });
-
         return liaison_officer;
     }
 }
@@ -126,10 +128,10 @@ async function fetch_requested_and_end_petty_cash(frm){
 }
 
 
-async function create_advance_auto(frm, petty_cash){
+async function create_advance_auto(frm, petty_cash, project_manager){
     frappe.call({
         method:"advance.new_employee_advnce.doctype.petty_cash.petty_cash.create_new_advance",
-        args:{name:frm.doc.name, petty_cash_amount:petty_cash, employee:frm.doc.custom_on_behalf, project:frm.doc.project, company:frm.doc.custom_company},
+        args:{name:frm.doc.name, petty_cash_amount:petty_cash, employee:frm.doc.custom_on_behalf, project:frm.doc.project, company:frm.doc.custom_company, project_manager:project_manager},
         freeze: true,
         freeze_message: __("Create Advance, Please waite..."),
         callback:function(resp){

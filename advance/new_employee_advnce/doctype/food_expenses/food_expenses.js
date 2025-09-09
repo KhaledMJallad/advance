@@ -5,6 +5,7 @@ let end_date = null;
 let liaison_officer = null;
 let employee_number = null;
 let project_manager = null;
+let repeted = 0;
 const usedColors = new Set();
 frappe.ui.form.on("Food Expenses", {
       before_workflow_action:function(frm){
@@ -44,9 +45,9 @@ frappe.ui.form.on("Food Expenses", {
         await expsnes_details_table(frm)
         if(!frm.is_new()){
             coloring_table(frm)
-            // if(frm.doc.custom_rejected_reason &&  (liaison_officer === employee_number || frappe.user.has_role("System Manager"))){
-            //     show_rejected_reson(frm)
-            // }
+            if(frm.doc.custom_rejected_reason &&  (liaison_officer === employee_number || frappe.user.has_role("System Manager"))){
+                show_rejected_reson(frm)
+            }
             if(frm.doc.workflow_state === 'Rejected' || frm.doc.workflow_state === "Initiator"){
                 if(liaison_officer === employee_number || frappe.user.has_role("System Manager")){
                     frm.page.actions_btn_group.show(); 
@@ -153,9 +154,7 @@ async function add_assigend_to(frm){
         args:{workflow_state:frm.doc.workflow_state, name:frm.doc.name, project_manager:project_manager}
     })
 
-    if(response.message.status === 404){
-        frappe.throw(response.message.message)
-    }
+  
 }
 async function get_employee_number(frm){
     let employee = null;
@@ -1081,29 +1080,27 @@ function coloring_table(frm){
             });
             frm.refresh_field('expenses');
 }
-// function show_rejected_reson(frm){
-//     const dialog = new frappe.ui.Dialog({
-//             title: __('Notice'),
-//             fields: [
-//                 {
-//                     fieldtype: 'HTML',
-//                     fieldname: 'message',
-//                     options: `<div style="padding:1rem; font-size:1rem;">
-//                                 ${frm.doc.custom_rejected_reason}
-//                             </div>`
-//                 }
-//             ],
-//             primary_action_label: __('OK'),
-//             primary_action: () =>{
-//                 frm.set_value('custom_rejected_reason', null);
-//                 dialog.hide();
-//             },
-//             secondary_action: null
-//         });
+function show_rejected_reson(frm){
+    if(repeted === 1) return;
+    const dialog = new frappe.ui.Dialog({
+            title: __('Notice'),
+            fields: [
+                {
+                    fieldtype: 'HTML',
+                    fieldname: 'message',
+                    options: `<div style="padding:1rem; font-size:1rem;">
+                                ${frm.doc.custom_rejected_reason}
+                            </div>`
+                }
+            ],
+            primary_action_label: null,
+           
+            secondary_action: null
+        });
 
-//         dialog.show();
-            
-// }
+        dialog.show();
+        repeted = 0;    
+}
 
 async function get_allowed_employee(project, date){
     let employee = [];

@@ -98,7 +98,8 @@
    "fieldname": "expenses",
    "fieldtype": "Table",
    "label": "Expenses",
-   "options": "Food Expense Item"
+   "options": "Food Expense Item",
+   "reqd": 1
   },
   {
    "fieldname": "section_break_vpkr",
@@ -123,7 +124,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-08-26 09:26:44.455179",
+ "modified": "2025-09-09 15:34:15.750975",
  "modified_by": "Administrator",
  "module": "new Employee Advnce",
  "name": "Food Expenses",
