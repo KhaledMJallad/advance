@@ -3,7 +3,7 @@ let project_manager = null;
 let on_behalf = null;
 let employee = null;
 let project_manager_email = null;
-let payable_account = '2110 - Creditors - TD';
+let payable_account = '1620 - Petty Cash - iKSA';
 frappe.ui.form.on('Expense Claim', {
     after_save:async function(frm){
         await update_petty_cash(frm)
@@ -13,14 +13,14 @@ frappe.ui.form.on('Expense Claim', {
         if(frm.doc.workflow_state === "Approved" && (frm.doc.custom_espense_type === "Replenishment" || frm.doc.custom_espense_type === "Project petty-cash End")){
             await update_food(frm)
         }
-        await get_project_data(frm)
-        if(frm.doc.employee !== on_behalf && frm.doc.workflow_state !== "Initiator"){
-            await change_employee_to_on_on_behalf(frm)
-            frm.save(); 
-        }else if(frm.doc.workflow_state === "Initiator" && frm.doc.employee !== liaison_officer){
-            await cahnge_expenses_to_lission_officer(frm)
-            frm.save(); 
-        }
+        // await get_project_data(frm)
+        // if(frm.doc.employee !== on_behalf && frm.doc.workflow_state !== "Initiator"){
+        //     await change_employee_to_on_on_behalf(frm)
+        //     frm.save(); 
+        // }else if(frm.doc.workflow_state === "Initiator" && frm.doc.employee !== liaison_officer){
+        //     await cahnge_expenses_to_lission_officer(frm)
+        //     frm.save(); 
+        // }
         if(frm.doc.workflow_state === 'Rejected' || frm.doc.workflow_state === "Initiator") return;
             add_assigend_to(frm)
     },
@@ -62,7 +62,7 @@ frappe.ui.form.on('Expense Claim', {
             if(frappe.user.has_role("System Manager")){
                 frm.set_df_property('employee', 'read_only', true)
                 frm.set_df_property('expense_approver', 'read_only', true)
-                frm.set_value('employee', liaison_officer)
+                frm.set_value('employee', on_behalf)
                 await get_project_manager_email(frm)
                 await get_project_advance(frm)
                 frm.set_value('expense_approver', project_manager_email)
@@ -79,7 +79,7 @@ frappe.ui.form.on('Expense Claim', {
                 if(employee === liaison_officer){
                     frm.set_df_property('employee', 'read_only', true)
                     frm.set_df_property('expense_approver', 'read_only', true)
-                    frm.set_value('employee', liaison_officer)
+                    frm.set_value('employee', on_behalf)
                     await get_project_manager_email(frm)
                     await get_project_advance(frm)
                     frm.set_value('expense_approver', project_manager_email)

@@ -44,9 +44,9 @@ frappe.ui.form.on("Food Expenses", {
         await expsnes_details_table(frm)
         if(!frm.is_new()){
             coloring_table(frm)
-            if(frm.doc.custom_rejected_reason &&  (liaison_officer === employee_number || frappe.user.has_role("System Manager"))){
-                show_rejected_reson(frm)
-            }
+            // if(frm.doc.custom_rejected_reason &&  (liaison_officer === employee_number || frappe.user.has_role("System Manager"))){
+            //     show_rejected_reson(frm)
+            // }
             if(frm.doc.workflow_state === 'Rejected' || frm.doc.workflow_state === "Initiator"){
                 if(liaison_officer === employee_number || frappe.user.has_role("System Manager")){
                     frm.page.actions_btn_group.show(); 
@@ -1081,29 +1081,29 @@ function coloring_table(frm){
             });
             frm.refresh_field('expenses');
 }
-function show_rejected_reson(frm){
-    const dialog = new frappe.ui.Dialog({
-            title: __('Notice'),
-            fields: [
-                {
-                    fieldtype: 'HTML',
-                    fieldname: 'message',
-                    options: `<div style="padding:1rem; font-size:1rem;">
-                                ${frm.doc.custom_rejected_reason}
-                            </div>`
-                }
-            ],
-            primary_action_label: __('OK'),
-            primary_action: () =>{
-                frm.set_value('custom_rejected_reason', null);
-                dialog.hide();
-            },
-            secondary_action: null
-        });
+// function show_rejected_reson(frm){
+//     const dialog = new frappe.ui.Dialog({
+//             title: __('Notice'),
+//             fields: [
+//                 {
+//                     fieldtype: 'HTML',
+//                     fieldname: 'message',
+//                     options: `<div style="padding:1rem; font-size:1rem;">
+//                                 ${frm.doc.custom_rejected_reason}
+//                             </div>`
+//                 }
+//             ],
+//             primary_action_label: __('OK'),
+//             primary_action: () =>{
+//                 frm.set_value('custom_rejected_reason', null);
+//                 dialog.hide();
+//             },
+//             secondary_action: null
+//         });
 
-        dialog.show();
+//         dialog.show();
             
-}
+// }
 
 async function get_allowed_employee(project, date){
     let employee = [];
