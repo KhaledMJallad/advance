@@ -42,9 +42,10 @@ frappe.ui.form.on("Food Expenses", {
         if(!frm.doc.project)return;
         await get_project_data(frm)
         change_table_functionlaty(frm)
-        await expsnes_details_table(frm)
+		
         if(!frm.is_new()){
             coloring_table(frm)
+        	await expsnes_details_table(frm)
             if(frm.doc.custom_rejected_reason &&  (liaison_officer === employee_number || frappe.user.has_role("System Manager"))){
                 show_rejected_reson(frm)
             }
@@ -172,7 +173,9 @@ async function get_employee_number(frm){
    }else{
         response.message.data.forEach(item => employee = item.name)
         employee_number = employee;
-        frm.set_value('employee', employee)
+	   if(frm.is_new()){
+        	frm.set_value('employee', employee)
+	   }
    }
 }
 async function get_project_data(frm){
