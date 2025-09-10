@@ -128,7 +128,7 @@ def get_expenses_food(project ,start_date, end_date):
 	WHERE `project` = %s 
 	AND `start_date` >= %s 
 	AND `end_date` <= %s
-    AND `docstatus` = 1
+    AND `workflow_state` != 'Rejected'
 	''', (project, start_date, end_date), as_dict=True)
       
 	if not response:
