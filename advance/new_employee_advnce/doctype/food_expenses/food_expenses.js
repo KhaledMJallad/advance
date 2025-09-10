@@ -58,6 +58,8 @@ frappe.ui.form.on("Food Expenses", {
             }
 
         }else{
+            frm.clear_table("expenses");
+            frm.refresh_field("expenses")
             if(liaison_officer === employee_number || frappe.user.has_role("System Manager")){
             if(frappe.user.has_role("System Manager")){
                 frm.set_value('employee', liaison_officer)

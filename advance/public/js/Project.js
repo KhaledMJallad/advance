@@ -5,12 +5,15 @@ frappe.ui.form.on('Project', {
 		await get_no_of_petty_cahs_request(frm)
 		if(frappe.user.has_role("System Manager")){
 			$(frm.$wrapper).find('.form-links').find('.section-body').find('[data-doctype="Petty-cash"]').find('.button').show()
+			$(frm.$wrapper).find('.form-links').find('.section-body').find('[data-doctype="Food Expenses"]').find('.button').show()
 		}else{
 			await get_employee_number(frm)
 			if(liaison_officer === frm.doc.custom_liaison_officer){
 				$(frm.$wrapper).find('.form-links').find('.section-body').find('[data-doctype="Petty-cash"]').find('.button').show()
+				$(frm.$wrapper).find('.form-links').find('.section-body').find('[data-doctype="Food Expenses"]').find('.button').show()
 			}else{
 				$(frm.$wrapper).find('.form-links').find('.section-body').find('[data-doctype="Petty-cash"]').find('button').hide()
+				$(frm.$wrapper).find('.form-links').find('.section-body').find('[data-doctype="Food Expenses"]').find('button').hide()
 			}
 
 		}
