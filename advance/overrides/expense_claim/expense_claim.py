@@ -14,6 +14,96 @@ def force_to_save(name):
     doc.insert(ignore_permissions=True)
     return {"status": 201, 'message': "data has been saved successfuly"}
 
+#########################################################################
+# @frappe.whitelist()
+# def share_with_and_assign_to(workflow_state, project_manager, name):
+#     response = frappe.db.sql('''
+#         SELECT DISTINCT u.email, wft.allowed
+#         FROM `tabWorkflow` AS wf
+#         LEFT JOIN `tabWorkflow Transition` AS wft
+#             ON wf.name = wft.parent
+#         LEFT JOIN `tabHas Role` AS hr
+#             ON wft.allowed = hr.role
+#         LEFT JOIN `tabUser` AS u
+#             ON u.name = hr.parent
+#         WHERE wft.state = %s
+#           AND wf.document_type = 'Expense Claim'
+#           AND u.enabled = 1
+#     ''', (workflow_state,), as_dict=True)
+
+#     if not response:
+#         return {'status': 404, 'message': 'No employee found for this workflow state'}
+
+#     clear_email = []
+
+#     for row in response:
+#         if not row['email'] or row['email'] in ['admin@example.com', 'Administrator']:
+#             continue
+
+#         if row['allowed'] == 'Projects Manager':
+#             project_mgr_user = frappe.db.sql('''
+#                 SELECT user_id 
+#                 FROM `tabEmployee`
+#                 WHERE name = %s AND status = 'Active'
+#             ''', (project_manager,), as_dict=True)
+
+#             if project_mgr_user and project_mgr_user[0].get('user_id'):
+#                 user_id = project_mgr_user[0]['user_id']
+#                 if user_id not in ['admin@example.com', 'Administrator']:
+#                     clear_email.append(user_id)
+#         else:
+#             clear_email.append(row['email'])
+
+#     # ---- ToDo + Share ----
+#     status = ['Open', 'Pending']
+#     created, skipped = [], []
+
+#     for user_email in clear_email:
+#         exists = frappe.db.exists(
+#             "ToDo",
+#             {
+#                 "reference_type": "Expense Claim",
+#                 "reference_name": name,
+#                 "allocated_to": user_email,
+#                 "status": ("in", status)
+#             }
+#         )
+
+#         if exists:
+#             skipped.append(user_email)
+#             continue
+
+#         frappe.get_doc({
+#             "doctype": "ToDo",
+#             "allocated_to": user_email,
+#             "reference_type": "Expense Claim",
+#             "reference_name": name,
+#             "description": f"Please review Expense Claim {name} - State: {workflow_state}",
+#             "priority": "High",
+#             "status": "Open",
+#             "date": frappe.utils.today()
+#         }).insert(ignore_permissions=True)
+
+#         # Share with read-only access by default
+#         frappe.share.add("Expense Claim", name, user_email, read=1, write=1)
+
+#         created.append(user_email)
+
+#     if created:
+#         return {
+#             'status': 201,
+#             'message': f"Assignments created and shared for: {', '.join(created)}",
+#             'skipped': skipped
+#         }
+#     else:
+#         return {
+#             'status': 200,
+#             'message': "All employees already had assignments",
+#             'skipped': skipped
+#         }
+#########################################################################
+
+######################################################################### Edit
 @frappe.whitelist()
 def share_with_and_assign_to(workflow_state, project_manager, name):
     response = frappe.db.sql('''
@@ -35,11 +125,37 @@ def share_with_and_assign_to(workflow_state, project_manager, name):
 
     clear_email = []
 
+    # جلب معلومات الـ Expense Claim للحصول على الموظف والمالك
+    expense_claim = frappe.get_doc("Expense Claim", name)
+    employee_user_id = None
+    document_owner = expense_claim.owner
+
+    # جلب user_id الخاص بالموظف المسجل في الـ Expense Claim
+    if expense_claim.employee:
+        employee_data = frappe.db.sql('''
+            SELECT user_id 
+            FROM `tabEmployee`
+            WHERE name = %s AND status = 'Active'
+        ''', (expense_claim.employee,), as_dict=True)
+        
+        if employee_data and employee_data[0].get('user_id'):
+            employee_user_id = employee_data[0]['user_id']
+
     for row in response:
         if not row['email'] or row['email'] in ['admin@example.com', 'Administrator']:
             continue
 
-        if row['allowed'] == 'Projects Manager':
+        # معالجة خاصة للـ Role "Employee"
+        if row['allowed'] == 'Employee':
+            # إضافة الموظف نفسه فقط (إذا كان موجود ومفعل)
+            if employee_user_id and employee_user_id not in ['admin@example.com', 'Administrator']:
+                clear_email.append(employee_user_id)
+            
+            # إضافة مالك المستند
+            if document_owner and document_owner not in ['admin@example.com', 'Administrator']:
+                clear_email.append(document_owner)
+        
+        elif row['allowed'] == 'Projects Manager':
             project_mgr_user = frappe.db.sql('''
                 SELECT user_id 
                 FROM `tabEmployee`
@@ -51,7 +167,11 @@ def share_with_and_assign_to(workflow_state, project_manager, name):
                 if user_id not in ['admin@example.com', 'Administrator']:
                     clear_email.append(user_id)
         else:
+            # للأدوار الأخرى، إضافة جميع المستخدمين كما هو معتاد
             clear_email.append(row['email'])
+
+    # إزالة التكرارات
+    clear_email = list(set(clear_email))
 
     # ---- ToDo + Share ----
     status = ['Open', 'Pending']
@@ -100,8 +220,7 @@ def share_with_and_assign_to(workflow_state, project_manager, name):
             'message': "All employees already had assignments",
             'skipped': skipped
         }
-
-
+#########################################################################
 
 @frappe.whitelist()
 def change_to_lission_officer(name, liaison_officer):
