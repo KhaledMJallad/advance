@@ -4,6 +4,7 @@ let start_date = null;
 let end_date = null;
 let liaison_officer = null;
 let employee_number = null;
+let on_behalf = null;
 let project_manager = null;
 let repeted = 0;
 const usedColors = new Set();
@@ -32,9 +33,10 @@ frappe.ui.form.on("Food Expenses", {
         }
     },
     after_workflow_action:async function(frm){
+
         if(frm.doc.workflow_state === "Initiator") return;
         await get_project_data(frm)
-        console.log(project_manager)
+        console.log(on_behalf)
         await add_assigend_to(frm)
     },
 	refresh:async function(frm) {
@@ -49,13 +51,22 @@ frappe.ui.form.on("Food Expenses", {
             if(frm.doc.custom_rejected_reason &&  (liaison_officer === employee_number || frappe.user.has_role("System Manager"))){
                 show_rejected_reson(frm)
             }
-            if(frm.doc.workflow_state === 'Rejected' || frm.doc.workflow_state === "Initiator"){
-                if(liaison_officer === employee_number || frappe.user.has_role("System Manager")){
+            // if(frm.doc.workflow_state === 'Rejected' || frm.doc.workflow_state === "Initiator"){
+            //     if(liaison_officer === employee_number || frappe.user.has_role("System Manager")){
+            //         frm.page.actions_btn_group.show(); 
+            //     }else{
+            //         frm.page.actions_btn_group.hide(); 
+            //     }
+            // }
+
+            if(frm.doc.workflow_state === 'On Behalf'){
+                if(on_behalf === employee_number){
                     frm.page.actions_btn_group.show(); 
                 }else{
-                    frm.page.actions_btn_group.hide(); 
+                    frm.page.actions_btn_group.hide();  
                 }
             }
+            
 
         }else{
             frm.clear_table("expenses");
@@ -154,7 +165,7 @@ frappe.ui.form.on("Food Expense Item", {
 async function add_assigend_to(frm){
     const response = await frappe.call({
         method:"advance.new_employee_advnce.doctype.food_expenses.food_expenses.assign_food_expenses",
-        args:{workflow_state:frm.doc.workflow_state, name:frm.doc.name, project_manager:project_manager}
+        args:{workflow_state:frm.doc.workflow_state, name:frm.doc.name, project_manager:project_manager, on_behalf:on_behalf}
     })
 
   
@@ -197,6 +208,7 @@ async function get_project_data(frm){
             end_date = item.expected_end_date
             liaison_officer = item.custom_liaison_officer
             project_manager = item.project_manager
+            on_behalf = item.custom_on_behalf
         }
     }
 }

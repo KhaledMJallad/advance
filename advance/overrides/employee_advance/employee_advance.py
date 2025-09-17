@@ -112,4 +112,76 @@ def get_employee_number(user):
         frappe.response["message"] = {'status':404 , 'message':'No data was found'}
     else:
         frappe.response["message"] = {'status':200 , 'data':response}
-            
+
+
+@frappe.whitelist()
+def share_with_and_assign_to(workflow_state, name, project_manager):
+    
+    clear_email = []
+    if workflow_state == 'Project Manager':
+    
+        if project_manager:
+            project_mgr_user = frappe.db.sql('''
+                SELECT user_id 
+                FROM `tabEmployee`
+                WHERE name = %s AND status = 'Active'
+            ''', (project_manager,), as_dict=True)
+
+            if project_mgr_user and project_mgr_user[0].get('user_id'):
+                user_id = project_mgr_user[0]['user_id']
+                if user_id not in ['admin@example.com', 'Administrator']:
+                    clear_email.append(user_id)
+        else:
+            return {'status': 400, 'message': 'Project manager parameter is required for Project Manager workflow state'}
+        
+    # Check if we have any emails to process
+    if not clear_email:
+        return {'status': 404, 'message': 'No valid users found for assignment'}
+
+    # ---- ToDo + Share ----
+    status = ['Open', 'Pending']
+    created, skipped = [], []
+
+    for user_email in clear_email:
+        exists = frappe.db.exists(
+            "ToDo",
+            {
+                "reference_type": "Employee Advance",
+                "reference_name": name,
+                "allocated_to": user_email,
+                "status": ("in", status)
+            }
+        )
+
+        if exists:
+            skipped.append(user_email)
+            continue
+
+        frappe.get_doc({
+            "doctype": "ToDo",
+            "allocated_to": user_email,
+            "reference_type": "Employee Advance",
+            "reference_name": name,
+            "description": f"Please review Employee Advance {name} - State: {workflow_state}",
+            "priority": "High",
+            "status": "Open",
+            "date": frappe.utils.today()
+        }).insert(ignore_permissions=True)
+
+        # Share with read-only access by default
+        frappe.share.add("Employee Advance", name, user_email, read=1, write=1, share=1)
+
+        created.append(user_email)
+
+    if created:
+        return {
+            'status': 201,
+            'message': f"Assignments created and shared for: {', '.join(created)}",
+            'skipped': skipped
+        }
+    else:
+        return {
+            'status': 200,
+            'message': "All employees already had assignments",
+            'skipped': skipped
+        }

@@ -97,7 +97,8 @@ def get_project_data(project_name):
             `expected_end_date`,
             `custom_liaison_officer`,
 			`project_manager`,
-            `custom_pettycash_amount`
+            `custom_pettycash_amount`,
+            `custom_on_behalf`
         FROM `tabProject`
         WHERE `name` = %s
         AND `status` = 'Open'
@@ -282,58 +283,114 @@ def getEmployeeAllWeekAttendance(employee, week_start_date, week_end_date):
 
 ######################################################## Edit
 @frappe.whitelist()
-def assign_food_expenses(workflow_state, project_manager, name):
-    response = frappe.db.sql('''
-        SELECT DISTINCT u.email, wft.allowed
-        FROM `tabWorkflow` AS wf
-        LEFT JOIN `tabWorkflow Transition` AS wft
-            ON wf.name = wft.parent
-        LEFT JOIN `tabHas Role` AS hr
-            ON wft.allowed = hr.role
-        LEFT JOIN `tabUser` AS u
-            ON u.name = hr.parent
-        WHERE wft.state = %s
-          AND u.enabled = 1
-    ''', (workflow_state,), as_dict=True)
-
-    print('response_email:', response)
-
-    if not response:
-        return {'status': 404, 'message': 'No Employee has been found'}
+def assign_food_expenses(workflow_state, project_manager, name, on_behalf):
+    # If workflow state is "Initiator", skip the whole function
+    if workflow_state == "Initiator":
+        return {
+            'status': 200,
+            'message': 'Skipped assignment for Initiator state'
+        }
 
     clear_email = []
 
-    # الحصول على معلومات الوثيقة الحالية
+    # Get current document information
     doc = frappe.get_doc("Food Expenses", name)
-    doc_owner = doc.owner  # المالك الأصلي للوثيقة
-    
-    # الحصول على الموظف المرتبط بالوثيقة
+    doc_owner = doc.owner  # Original document owner
+
+    # Get employee associated with the document
     doc_employee_user = None
     if doc.employee:
         employee_doc = frappe.get_doc("Employee", doc.employee)
         doc_employee_user = employee_doc.user_id
 
-    for row in response:
-        if row['email'] == 'admin@example.com':
-            continue
-
-        if row['allowed'] == 'Projects Manager':
-            project_mgr_user = frappe.db.sql('''
+    # Handle "On Behalf" workflow state
+    if workflow_state == "On Behalf":
+        if on_behalf:
+            on_behalf_user = frappe.db.sql('''
                 SELECT user_id 
+                FROM `tabEmployee`
+                WHERE name = %s AND status = 'Active'
+            ''', (on_behalf,), as_dict=True)
+
+            if on_behalf_user and on_behalf_user[0]['user_id'] != 'admin@example.com':
+                clear_email.append({'email': on_behalf_user[0]['user_id']})
+            else:
+                return {
+                    'status': 404,
+                    'message': 'Project Manager not found or inactive'
+                }
+        else:
+            return {
+                'status': 400,
+                'message': 'On behalf parameter is required for On Behalf workflow state'
+            }
+
+    # Handle "Project Manager" workflow state
+    elif workflow_state == "Project Manager":
+        if project_manager:
+            project_mgr_user = frappe.db.sql('''
+                SELECT user_id
                 FROM `tabEmployee`
                 WHERE name = %s AND status = 'Active'
             ''', (project_manager,), as_dict=True)
 
             if project_mgr_user and project_mgr_user[0]['user_id'] != 'admin@example.com':
                 clear_email.append({'email': project_mgr_user[0]['user_id']})
-        
-        elif row['allowed'] == 'Employee':
-            # للرول Employee: فقط الموظف نفسه والمالك
-            if row['email'] == doc_employee_user or row['email'] == doc_owner:
-                clear_email.append(row)
-        
+            else:
+                return {
+                    'status': 404,
+                    'message': 'Project Manager not found or inactive'
+                }
         else:
-            clear_email.append(row)
+            return {
+                'status': 400,
+                'message': 'project_manager parameter is required for Project Manager workflow state'
+            }
+
+    # For other workflow states, use role-based search
+    else:
+        response = frappe.db.sql('''
+            SELECT DISTINCT u.email, wft.allowed
+            FROM `tabWorkflow` AS wf
+            LEFT JOIN `tabWorkflow Transition` AS wft
+                ON wf.name = wft.parent
+            LEFT JOIN `tabHas Role` AS hr
+                ON wft.allowed = hr.role
+            LEFT JOIN `tabUser` AS u
+                ON u.name = hr.parent
+            WHERE wft.state = %s
+            AND u.enabled = 1
+        ''', (workflow_state,), as_dict=True)
+
+        print('response_email:', response)
+
+        if not response:
+            return {
+                'status': 404,
+                'message': 'No Employee has been found'
+            }
+
+        for row in response:
+            if row['email'] == 'admin@example.com':
+                continue
+
+            if row['allowed'] == 'Projects Manager':
+                project_mgr_user = frappe.db.sql('''
+                    SELECT user_id
+                    FROM `tabEmployee`
+                    WHERE name = %s AND status = 'Active'
+                ''', (project_manager,), as_dict=True)
+
+                if project_mgr_user and project_mgr_user[0]['user_id'] != 'admin@example.com':
+                    clear_email.append({'email': project_mgr_user[0]['user_id']})
+
+            elif row['allowed'] == 'Employee':
+                # For Employee role: only the employee themselves and the owner
+                if row['email'] == doc_employee_user or row['email'] == doc_owner:
+                    clear_email.append(row)
+
+            else:
+                clear_email.append(row)
 
     # ---- Create ToDo and Share ----
     status = ['Open', 'Pending']
@@ -368,8 +425,7 @@ def assign_food_expenses(workflow_state, project_manager, name):
         todo_doc.insert(ignore_permissions=True)
 
         # Share the document with the user
-        frappe.share.add("Food Expenses", name, row['email'], read=1, write=1)
-
+        frappe.share.add("Food Expenses", name, row['email'], read=1, write=1, share=1)
         created.append(row['email'])
 
     if created:
@@ -384,6 +440,7 @@ def assign_food_expenses(workflow_state, project_manager, name):
             'message': "All employees already had assignments",
             'skipped': skipped
         }
+
 ##################################################################
 
 
