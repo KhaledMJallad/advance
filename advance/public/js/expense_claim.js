@@ -101,7 +101,7 @@ frappe.ui.form.on('Expense Claim', {
                 show_rejected_reson(frm);
             } 
 
-              if(frm.doc.workflow_state === 'On Behalf'){
+              if(frm.doc.workflow_state === 'On Behalf' || frappe.user.has_role("System Manager"){
                 if(on_behalf === employee){
                     frm.page.actions_btn_group.show(); 
                 }else{
