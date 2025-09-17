@@ -59,7 +59,7 @@ frappe.ui.form.on("Food Expenses", {
             //     }
             // }
 
-            if(frm.doc.workflow_state === 'On Behalf'){
+            if(frm.doc.workflow_state === 'On Behalf' || frappe.user.has_role("System Manager"){
                 if(on_behalf === employee_number){
                     frm.page.actions_btn_group.show(); 
                 }else{
