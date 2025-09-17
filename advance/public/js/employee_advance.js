@@ -16,7 +16,7 @@ frappe.ui.form.on('Employee Advance', {
         await get_project_data(frm)
         if(!frm.is_new()){
             if(frm.doc.workflow_state === 'On Behalf'){
-                if(on_behalf === employee_number){
+                if(on_behalf === employee_number || frappe.user.has_role("System Manager"){
                     frm.page.actions_btn_group.show(); 
                 }else{
                     frm.page.actions_btn_group.hide();  
