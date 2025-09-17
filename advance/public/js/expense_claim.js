@@ -95,9 +95,20 @@ frappe.ui.form.on('Expense Claim', {
                 }
             }   
         }else{
-            if((employee === liaison_officer && frappe.user.has_role("System Manager")) &&  frm.doc.custom_rejected_reason){
+            await get_project_data(frm);
+            await get_employee_number(frm);
+            if((employee === liaison_officer || frappe.user.has_role("System Manager")) &&  frm.doc.custom_rejected_reason){
                 show_rejected_reson(frm);
             } 
+
+              if(frm.doc.workflow_state === 'On Behalf'){
+                if(on_behalf === employee){
+                    frm.page.actions_btn_group.show(); 
+                }else{
+                    frm.page.actions_btn_group.hide();  
+                }
+            }
+
             if(frappe.user.has_role('Accounts User') || frappe.user.has_role('System Manager')){
                 frm.set_df_property('payable_account', 'read_only', false)
                 
@@ -176,7 +187,7 @@ async function change_employee_to_on_on_behalf(frm){
 async function add_assigend_to(frm){
     const response = await frappe.call({
         method:"advance.overrides.expense_claim.expense_claim.share_with_and_assign_to",
-        args:{workflow_state:frm.doc.workflow_state, name:frm.doc.name, project_manager:project_manager}
+        args:{workflow_state:frm.doc.workflow_state, name:frm.doc.name, project_manager:project_manager, on_behalf:on_behalf}
     })
 
 }
@@ -452,7 +463,6 @@ async function update_petty_cash(frm){
 }
 
 function show_rejected_reson(frm){
-    debugger;
     if (repeted === 1) return;
     const dialog = new frappe.ui.Dialog({
             title: __('Notice'),

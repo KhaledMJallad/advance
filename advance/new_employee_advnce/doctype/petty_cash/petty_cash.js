@@ -131,7 +131,14 @@ async function fetch_requested_and_end_petty_cash(frm){
 async function create_advance_auto(frm, petty_cash, project_manager){
     frappe.call({
         method:"advance.new_employee_advnce.doctype.petty_cash.petty_cash.create_new_advance",
-        args:{name:frm.doc.name, petty_cash_amount:petty_cash, employee:frm.doc.custom_on_behalf, project:frm.doc.project, company:frm.doc.custom_company, project_manager:project_manager},
+        args:{
+            name:frm.doc.name, 
+            petty_cash_amount:petty_cash, 
+            employee:frm.doc.custom_on_behalf, 
+            project:frm.doc.project, 
+            company:frm.doc.custom_company, 
+            project_manager:project_manager
+        },
         freeze: true,
         freeze_message: __("Create Advance, Please waite..."),
         callback:function(resp){
@@ -146,4 +153,9 @@ async function create_advance_auto(frm, petty_cash, project_manager){
             }
         }
     })
+}
+
+
+async function add_assigen_to(frm){
+
 }

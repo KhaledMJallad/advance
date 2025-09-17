@@ -3,10 +3,10 @@
   "docstatus": 0,
   "doctype": "Workflow State",
   "icon": "",
-  "modified": "2025-09-08 14:13:32.087021",
-  "name": "unpaid",
+  "modified": "2025-09-10 20:06:39.173313",
+  "name": "Cancel",
   "style": "Danger",
-  "workflow_state_name": "unpaid"
+  "workflow_state_name": "Cancel"
  },
  {
   "docstatus": 0,
@@ -16,6 +16,42 @@
   "name": "paid",
   "style": "Success",
   "workflow_state_name": "paid"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-08-05 13:29:25.241209",
+  "name": "Supporting Services Director",
+  "style": "",
+  "workflow_state_name": "Supporting Services Director"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-08-26 15:17:39.604379",
+  "name": "Accountant Submit",
+  "style": "",
+  "workflow_state_name": "Accountant Submit"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-09-08 14:13:32.087021",
+  "name": "unpaid",
+  "style": "Danger",
+  "workflow_state_name": "unpaid"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-07-31 15:37:45.124531",
+  "name": "CFO",
+  "style": "",
+  "workflow_state_name": "CFO"
  },
  {
   "docstatus": 0,
@@ -39,15 +75,6 @@
   "docstatus": 0,
   "doctype": "Workflow State",
   "icon": "",
-  "modified": "2025-07-31 15:37:45.124531",
-  "name": "CFO",
-  "style": "",
-  "workflow_state_name": "CFO"
- },
- {
-  "docstatus": 0,
-  "doctype": "Workflow State",
-  "icon": "",
   "modified": "2025-07-17 15:46:03.233948",
   "name": "Accountant",
   "style": "",
@@ -57,19 +84,10 @@
   "docstatus": 0,
   "doctype": "Workflow State",
   "icon": "",
-  "modified": "2025-08-05 13:29:25.241209",
-  "name": "Supporting Services Director",
+  "modified": "2025-09-16 11:36:22.439122",
+  "name": "On Behalf",
   "style": "",
-  "workflow_state_name": "Supporting Services Director"
- },
- {
-  "docstatus": 0,
-  "doctype": "Workflow State",
-  "icon": "",
-  "modified": "2025-08-26 15:17:39.604379",
-  "name": "Accountant Submit",
-  "style": "",
-  "workflow_state_name": "Accountant Submit"
+  "workflow_state_name": "On Behalf"
  },
  {
   "docstatus": 0,
