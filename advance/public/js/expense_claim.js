@@ -40,7 +40,7 @@ frappe.ui.form.on('Expense Claim', {
         }
 
 
-       if(frm.doc.custom_espense_type === 'Replenishment' && (frm.selected_workflow_action  === "Approve" && frm.doc.workflow_state === "Accountant Submit")){
+       if(frm.doc.custom_espense_type === 'Replenishment' && (frm.selected_workflow_action  === "Approve" && frm.doc.workflow_state === "Accountant")){
 
             await create_new_advance(frm, frm.doc.total_sanctioned_amount)
         }
