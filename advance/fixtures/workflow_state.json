@@ -39,19 +39,19 @@
   "docstatus": 0,
   "doctype": "Workflow State",
   "icon": "",
-  "modified": "2025-09-08 14:13:32.087021",
-  "name": "unpaid",
-  "style": "Danger",
-  "workflow_state_name": "unpaid"
+  "modified": "2025-07-31 15:37:45.124531",
+  "name": "CFO",
+  "style": "",
+  "workflow_state_name": "CFO"
  },
  {
   "docstatus": 0,
   "doctype": "Workflow State",
   "icon": "",
-  "modified": "2025-07-31 15:37:45.124531",
-  "name": "CFO",
-  "style": "",
-  "workflow_state_name": "CFO"
+  "modified": "2025-09-08 14:13:32.087021",
+  "name": "unpaid",
+  "style": "Danger",
+  "workflow_state_name": "unpaid"
  },
  {
   "docstatus": 0,

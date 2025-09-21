@@ -4,10 +4,10 @@
   "doctype": "Workflow",
   "document_type": "Employee Advance",
   "is_active": 1,
-  "modified": "2025-09-16 11:53:09.644723",
+  "modified": "2025-09-21 20:10:40.628047",
   "name": "Advance Flow",
   "override_status": 0,
-  "send_email_alert": 1,
+  "send_email_alert": 0,
   "states": [
    {
     "allow_edit": "System Manager",
@@ -182,10 +182,10 @@
   "doctype": "Workflow",
   "document_type": "Expense Claim",
   "is_active": 1,
-  "modified": "2025-09-16 11:51:21.718048",
+  "modified": "2025-09-21 20:10:15.506741",
   "name": "Petty-Cash Food",
   "override_status": 0,
-  "send_email_alert": 1,
+  "send_email_alert": 0,
   "states": [
    {
     "allow_edit": "Employee",
@@ -441,10 +441,10 @@
   "doctype": "Workflow",
   "document_type": "Food Expenses",
   "is_active": 1,
-  "modified": "2025-09-16 12:43:28.446821",
+  "modified": "2025-09-21 20:09:32.289792",
   "name": "Expense Food",
   "override_status": 0,
-  "send_email_alert": 1,
+  "send_email_alert": 0,
   "states": [
    {
     "allow_edit": "Employee",
@@ -630,7 +630,7 @@
     "allow_self_approval": 1,
     "allowed": "Projects Manager",
     "condition": null,
-    "next_state": "Initiator",
+    "next_state": "On Behalf",
     "parent": "Expense Food",
     "parentfield": "transitions",
     "parenttype": "Workflow",
