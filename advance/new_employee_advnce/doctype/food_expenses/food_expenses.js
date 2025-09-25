@@ -36,7 +36,6 @@ frappe.ui.form.on("Food Expenses", {
 
         if(frm.doc.workflow_state === "Initiator") return;
         await get_project_data(frm)
-        console.log(on_behalf)
         await add_assigend_to(frm)
     },
 	refresh:async function(frm) {
@@ -64,6 +63,13 @@ frappe.ui.form.on("Food Expenses", {
                     frm.page.actions_btn_group.show(); 
                 }else{
                     frm.page.actions_btn_group.hide();  
+                }
+            }else if(frm.doc.workflow_state === 'Project Manager'){
+                console.log(project_manager)
+                if(project_manager === employee_number || frappe.user.has_role("System Manager")){
+                    frm.page.actions_btn_group.show();
+                }else{
+                    frm.page.actions_btn_group.hide();
                 }
             }
             
