@@ -21,6 +21,12 @@ frappe.ui.form.on('Employee Advance', {
                 }else{
                     frm.page.actions_btn_group.hide();  
                 }
+            }else if(frm.doc.workflow_state === 'Project Manager'){
+                if(project_manager === employee_number || frappe.user.has_role("System Manager")){
+                    frm.page.actions_btn_group.show();
+                }else{
+                    frm.page.actions_btn_group.hide();
+                }
             }
         }
     },

@@ -101,11 +101,18 @@ frappe.ui.form.on('Expense Claim', {
                 show_rejected_reson(frm);
             } 
 
-              if(frm.doc.workflow_state === 'On Behalf'){
+            if(frm.doc.workflow_state === 'On Behalf'){
                 if(on_behalf === employee || frappe.user.has_role("System Manager")){
                     frm.page.actions_btn_group.show(); 
                 }else{
                     frm.page.actions_btn_group.hide();  
+                }
+            }else if(frm.doc.workflow_state === 'Project Manager'){
+                console.log(project_manager)
+                if(project_manager === employee || frappe.user.has_role("System Manager")){
+                    frm.page.actions_btn_group.show();
+                }else{
+                    frm.page.actions_btn_group.hide();
                 }
             }
 
