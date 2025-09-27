@@ -391,8 +391,6 @@ def update_food(expenses, name):
         
 @frappe.whitelist()
 def get_employee_advance(project, employee):
-    
-   
     response = frappe.db.sql(''' 
         SELECT 
         `advance_amount`,
@@ -400,11 +398,13 @@ def get_employee_advance(project, employee):
         `posting_date`
         FROM `tabEmployee Advance`
         WHERE 
-        `custom_project` = %s
+            `custom_project` = %s
         AND 
-        `employee` = %s
-        AND status = 'paid'
+            `employee` = %s
+        AND 
+            status = 'Paid'
         ''', (project, employee, ), as_dict=True)
+    
         
     if not response:
             return {'status':404 , 'message':'No data was found'}
