@@ -285,7 +285,7 @@ def getEmployeeAllWeekAttendance(employee, week_start_date, week_end_date):
 @frappe.whitelist()
 def assign_food_expenses(workflow_state, project_manager, name, on_behalf):
     # If workflow state is "Initiator", skip the whole function
-    if workflow_state == "Initiator":
+    if workflow_state == "Initiator" or workflow_state == "Rejected" or workflow_state == "Approved":
         return {
             'status': 200,
             'message': 'Skipped assignment for Initiator state'

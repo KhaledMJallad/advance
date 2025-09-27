@@ -108,7 +108,6 @@ frappe.ui.form.on('Expense Claim', {
                     frm.page.actions_btn_group.hide();  
                 }
             }else if(frm.doc.workflow_state === 'Project Manager'){
-                console.log(project_manager)
                 if(project_manager === employee || frappe.user.has_role("System Manager")){
                     frm.page.actions_btn_group.show();
                 }else{
@@ -307,7 +306,7 @@ async function food_poopup(frm){
                             let row = frm.add_child('expenses');
                             let [name, amount] = key.split('_');
                             let amt = String(amount).replace(/,/g, ''); 
-                            frappe.model.set_value(row.doctype, row.name, "amount", parseFloat(amt));
+                            frappe.model.set_value(row.doctype, row.name, "amount", amt);
                             frappe.model.set_value(row.doctype, row.name, "expense_food_name", name);
                             frappe.model.set_value(row.doctype, row.name, "description", 'Petty cash Food');
                             frappe.model.set_value(row.doctype, row.name, "expense_type", 'Hospitality Expenses');
@@ -384,6 +383,7 @@ async function get_project_advance(frm){
     
     if(response.message.status === 200){
         response.message.data.forEach(item => name_of_advance.push(item.name))
+        console.log(response.message.data)
         frm.clear_table("advances");
         frm.refresh_field("advances")
         name_of_advance.map((item) => {

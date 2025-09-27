@@ -107,7 +107,7 @@ def force_to_save(name):
 @frappe.whitelist()
 def share_with_and_assign_to(workflow_state, project_manager, name, on_behalf):
     # If workflow state is "Initiator", skip everything
-    if workflow_state == 'Initiator':
+    if workflow_state == 'Initiator' or workflow_state == 'Rejected' or workflow_state == "Approved":
         return {'status': 200, 'message': 'Initiator state - no assignments needed'}
     
     clear_email = []
@@ -391,20 +391,9 @@ def update_food(expenses, name):
         
 @frappe.whitelist()
 def get_employee_advance(project, employee):
-    is_lisseon_officer = frappe.db.sql('''
-    SELECT `custom_liaison_officer`
-    FROM `tabProject`
-    WHERE 
-    `name` = %s
-    AND 
-    `custom_liaison_officer` = %s
-    AND 
-    `status` = 'Open'
     
-    ''', (project, employee, ), as_dict=True)
-    
-    if is_lisseon_officer:
-        response = frappe.db.sql(''' 
+   
+    response = frappe.db.sql(''' 
         SELECT 
         `advance_amount`,
         `name`,
@@ -414,16 +403,13 @@ def get_employee_advance(project, employee):
         `custom_project` = %s
         AND 
         `employee` = %s
-        AND status = 'Paid'
+        AND status = 'paid'
         ''', (project, employee, ), as_dict=True)
         
-        if not response:
+    if not response:
             return {'status':404 , 'message':'No data was found'}
-        else:
-            return {'status':200 , 'data':response}
     else:
-        return {'status':404 , 'message':'No data was found'}
-
+            return {'status':200 , 'data':response}
 @frappe.whitelist()
 def get_project_data_expense(project):
     response = frappe.db.sql("""
