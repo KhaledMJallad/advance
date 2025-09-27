@@ -304,9 +304,9 @@ async function food_poopup(frm){
 
                         if (values[key] === 1) {  
                             let row = frm.add_child('expenses');
-                            let [name, amount] = key.split('_');
-                            let amt = String(amount).replace(/,/g, ''); 
-                            frappe.model.set_value(row.doctype, row.name, "amount", amt);
+                            let [name, amount] = key.split('_'); 
+                            frappe.model.set_value(row.doctype, row.name, "amount", parseFloat(amount));
+                            frappe.model.set_value(row.doctype, row.name, "sanctioned_amount", parseFloat(amount));
                             frappe.model.set_value(row.doctype, row.name, "expense_food_name", name);
                             frappe.model.set_value(row.doctype, row.name, "description", 'Petty cash Food');
                             frappe.model.set_value(row.doctype, row.name, "expense_type", 'Hospitality Expenses');
@@ -380,12 +380,11 @@ async function get_project_advance(frm){
         method:"advance.overrides.expense_claim.expense_claim.get_employee_advance",
         args:{project:frm.doc.project, employee:frm.doc.employee}
     })
-    
+    frm.clear_table("advances");
+    frm.refresh_field("advances")
     if(response.message.status === 200){
         response.message.data.forEach(item => name_of_advance.push(item.name))
         console.log(response.message.data)
-        frm.clear_table("advances");
-        frm.refresh_field("advances")
         name_of_advance.map((item) => {
         	let row = frm.add_child("advances");
         	frappe.model.set_value(row.doctype, row.name, "employee_advance", item);
