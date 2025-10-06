@@ -143,7 +143,7 @@ def is_partner(employee):
 	response = frappe.db.sql('''
 	SELECT `name`
 	FROM `tabEmployee`
-	WHERE `name` = %s AND `designation` = 'Partner' AND `status` = 'Active'
+	WHERE `name` = %s AND `designation` = 'Partner'
 	 ''', (employee,), as_dict=True)
 	
 	if not response:
@@ -451,7 +451,6 @@ def get_employee_name(name):
             FROM `tabEmployee`
             WHERE
             `name` = %s
-            AND `status` = 'Active'
         ''', (name, ), as_dict=True)
         
     if not response:
