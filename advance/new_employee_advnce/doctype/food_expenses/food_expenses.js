@@ -43,7 +43,6 @@ frappe.ui.form.on("Food Expenses", {
         if(!frm.doc.project)return;
         await get_project_data(frm)
         change_table_functionlaty(frm)
-		
         if(!frm.is_new()){
             coloring_table(frm)
         	await expsnes_details_table(frm)
@@ -316,7 +315,7 @@ async function get_employee_name(employee){
         args:{name:employee}
     })
     if(response.message.status === 404){
-        frappe.throw(response.message.message);
+        return "NULL"
     }else{
         response.message.data.forEach(item => employee_name = item.employee_name)
         return employee_name
@@ -418,7 +417,7 @@ function petty_cash_food_popup(frm){
                 },
                 { fieldtype:'Column Break' },
                 { label: __('Total Amount'), fieldname:'total_amount', fieldtype:'Currency', reqd:1,},
-                { label: __('Invoice Image'), fieldname:'invoice_image', fieldtype:'Attach', reqd:1,  
+                { label: __('Invoice Image'), fieldname:'invoice_image', fieldtype:'Attach', reqd:1
                 },
                 { fieldtype:'Section Break' },
                 {
@@ -573,6 +572,21 @@ function petty_cash_food_popup(frm){
               }
             });
         d.set_df_property('items','hidden',true);
+        d.fields_dict.invoice_image.$input.on('click', function() {
+             let checkInterval = setInterval(function() {
+                // Find and click the "Set all public" button
+                let setPublicBtn = $('.btn-modal-secondary:contains("Set all public")')[0];
+                
+                if (setPublicBtn) {
+                    $(setPublicBtn).click();
+                    clearInterval(checkInterval);
+                }
+            }, 100);
+
+            setTimeout(function() {
+                clearInterval(checkInterval);
+            }, 5000);
+        });
         d.show();
         const grid = d.fields_dict['items'].grid;
         d.fields_dict.expense_date.$input.on('change', function() {
@@ -901,6 +915,21 @@ async function petty_cash_food_popup_edit(frm, cdn){
                 d.hide();
               }
             });
+             d.fields_dict.invoice_image.$input.on('click', function() {
+                let checkInterval = setInterval(function() {
+                    // Find and click the "Set all public" button
+                    let setPublicBtn = $('.btn-modal-secondary:contains("Set all public")')[0];
+                    
+                    if (setPublicBtn) {
+                        $(setPublicBtn).click();
+                        clearInterval(checkInterval);
+                    }
+                }, 100);
+
+                setTimeout(function() {
+                    clearInterval(checkInterval);
+                }, 5000);
+            });
             d.show();
             d.fields_dict.expense_date.$input.on('change', function() {
                 const table = d.fields.find(items => items.fieldname === 'items');
@@ -946,7 +975,7 @@ async function expsnes_details_table(frm) {
     const employees = [...new Set(expenses.map(r => r.employee))];
     let dayTotals = new Array(days.length).fill(0);
     for (const item of employees) {
-        console.log(item)
+
         const data = expenses
             .filter(r => r.employee === item)
             .sort((a, b) => new Date(a.expense_date) - new Date(b.expense_date));
