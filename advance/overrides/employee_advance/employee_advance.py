@@ -185,3 +185,36 @@ def share_with_and_assign_to(workflow_state, name, project_manager):
             'message': "All employees already had assignments",
             'skipped': skipped
         }
+    
+
+@frappe.whitelist()
+def update_petty_cash_status(name):
+    if not name :
+        return {'status': 400, 'message':"Name is not exiest"}
+    
+    employee_advance_name = frappe.db.exists('Employee Advance', name)
+
+    if not employee_advance_name:
+        return {'status': 404, 'message': "Nmae is not Exist"}
+    
+    petty_cahs_name =  frappe.db.sql('''
+        SELECT 
+            `name`
+        FROM
+            `tabPetty-cash`
+        WHERE
+            `custom_advance` = %s
+        AND
+            `docstatus` = 1
+        AND 
+            `petty_cash_type` = 'Initial Petty cash Float'
+    ''', (employee_advance_name, ), as_dict = True)
+
+    petty_cash = [item['name'] for item in petty_cahs_name]
+    
+    if not petty_cash[0]:
+        return {'status': 404, 'message': "No data was found"}
+    
+    frappe.db.set_value('Petty-cash', petty_cash[0], 'docstatus', 2)
+    frappe.db.commit()
+    return {'status': 201 , 'message': "Status has been updated successfully"}
