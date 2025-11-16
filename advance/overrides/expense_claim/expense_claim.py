@@ -520,3 +520,35 @@ def update_petty_cash(name, petty_cash):
 
 
 
+@frappe.whitelist()
+def fetch_cost_center(name, comp, porj):
+    if not porj:
+        return {'status': 400, 'message': "No project has been inculded"}
+    
+    cost_center = frappe.db.get_value('Project', porj, 'cost_center')
+
+    doc =  frappe.get_doc('Expense Claim', name)
+
+    last_index = cost_center.rfind('-')
+    if last_index != -1:
+        cost_center = cost_center[:last_index].strip()
+
+    if  comp == 'iValueJOR':
+        cost_center += '- iJOR'
+    elif comp == 'iValueUAE':
+         cost_center += ' - iUAE'
+    elif comp =='iValue KSA':
+        cost_center += ' - iKSA'
+    else:
+        cost_center += ' - iV'
+
+    
+
+    for row in doc.expenses:
+        row.cost_center = cost_center
+
+    doc.cost_center = cost_center
+    doc.payable_account = "1620 - Petty Cash - iKSA"
+    doc.save()
+
+    # return last_name

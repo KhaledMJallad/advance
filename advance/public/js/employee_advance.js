@@ -10,8 +10,12 @@ frappe.ui.form.on('Employee Advance', {
     after_workflow_action:async function(frm){
         await get_project_data(frm)
         add_assigen_to(frm)
+        if(frm.doc.workflow_state === "Rejected"){
+            cancel_petty_cash(frm);
+        }
     },
     refresh: async function (frm) {
+        
         await get_employee_number(frm)
         await get_project_data(frm)
         if(!frm.is_new()){
@@ -97,4 +101,24 @@ async function get_employee_number(frm){
         response.message.data.forEach(item => employee = item.name)
         employee_number = employee;
    }
+}
+
+function cancel_petty_cash(frm){
+    frappe.call({
+        method:"advance.overrides.employee_advance.employee_advance.update_petty_cash_status",
+        args:{name:frm.doc.name},
+        freeze: true,
+        freeze_message: __("Update petty-cash Please waite..."),
+        callback:function(resp){
+            if(resp.message.status === 201){
+                frappe.show_alert({
+                message: __("petty-cash Updated successfuly"),
+                indicator: "green"
+            }, 5);
+            frm.reload_doc();
+            }else{
+                frappe.throw('An error has occurred. Please contact your administrator to resolve this issue.')
+            }
+        }
+    })
 }

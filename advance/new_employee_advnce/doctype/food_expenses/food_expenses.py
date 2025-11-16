@@ -93,8 +93,8 @@ def get_resorec_pool(project, date):
 def get_project_data(project_name):
     response = frappe.db.sql(''' 
         SELECT 
-            `expected_start_date`,
-            `expected_end_date`,
+            `custom_project_actual_start_date`,
+            `custom_project_actual_end_date`,
             `custom_liaison_officer`,
 			`project_manager`,
             `custom_pettycash_amount`,
