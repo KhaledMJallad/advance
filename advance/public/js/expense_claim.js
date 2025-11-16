@@ -3,10 +3,10 @@ let project_manager = null;
 let on_behalf = null;
 let employee = null;
 let project_manager_email = null;
-let payable_account = '1620 - Petty Cash - iKSA';
 let repeted = 0;
 frappe.ui.form.on('Expense Claim', {
     after_save:async function(frm){
+        await fetch_cost_center(frm);
         await update_petty_cash(frm)
         await share_file(frm)
     },
@@ -52,9 +52,9 @@ frappe.ui.form.on('Expense Claim', {
             if(!frm.doc.project) return;
             await get_project_data(frm);
             if(frappe.user.has_role("System Manager")){
-                if(!frm.doc.payable_account){
-                    frm.set_value('payable_account', payable_account)
-                }
+                // if(!frm.doc.payable_account){
+                //     frm.set_value('payable_account', payable_account)
+                // }
                 frm.set_df_property('payable_account', 'read_only', false)
                 frm.set_df_property('employee', 'read_only', true)
                 frm.set_df_property('expense_approver', 'read_only', true)
@@ -72,9 +72,9 @@ frappe.ui.form.on('Expense Claim', {
             }else{
                 await get_employee_number(frm);
                 if(employee === liaison_officer){
-                    if(!frm.doc.payable_account){
-                        frm.set_value('payable_account', payable_account)
-                    }
+                    // if(!frm.doc.payable_account){
+                    //     frm.set_value('payable_account', payable_account)
+                    // }
        
                     frm.set_df_property('payable_account', 'read_only', true)
                     frm.set_df_property('employee', 'read_only', true)
@@ -119,7 +119,7 @@ frappe.ui.form.on('Expense Claim', {
                 frm.set_df_property('payable_account', 'read_only', false)
                 
             }else{
-                frm.set_df_property(payable_account, 'read_only', true)
+                frm.set_df_property('payable_account', 'read_only', true)
             }
         }
 	},
@@ -167,6 +167,12 @@ frappe.ui.form.on("Expense Claim Detail", {
                 }
             });
     },
+
+    expenses_add:function(frm, cdn, cdt){
+        const row = locals[cdn][cdt];
+        row.project = frm.doc.project
+        frm.refresh_field('expenses')
+    }
 });
 
 
@@ -308,6 +314,7 @@ async function food_poopup(frm){
                             frappe.model.set_value(row.doctype, row.name, "amount", parseFloat(amount));
                             frappe.model.set_value(row.doctype, row.name, "sanctioned_amount", parseFloat(amount));
                             frappe.model.set_value(row.doctype, row.name, "expense_food_name", name);
+                            frappe.model.set_value(row.doctype, row.name, "project", frm.doc.project);
                             frappe.model.set_value(row.doctype, row.name, "description", 'Petty cash Food');
                             frappe.model.set_value(row.doctype, row.name, "expense_type", 'Hospitality Expenses');
                             frappe.model.set_value(row.doctype, row.name, "invoice_no", '0000000');
@@ -324,6 +331,23 @@ async function food_poopup(frm){
             });
 
             d.show();
+}
+
+
+async function fetch_cost_center(frm){
+    frappe.call({
+        method:"advance.overrides.expense_claim.expense_claim.fetch_cost_center",
+        args:{name:frm.doc.name, comp:frm.doc.company, porj:frm.doc.project,},
+        callback:function(response){
+            if(response.message.status === 200){
+                if(response.message.data !== frm.doc.cost_center){
+                    frm.set_value('cost_center', response.message.data)
+                }
+            }
+        }
+    })
+
+
 }
 
 async function get_project_data(frm){
