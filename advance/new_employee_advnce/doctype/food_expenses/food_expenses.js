@@ -205,12 +205,12 @@ async function get_project_data(frm){
         frappe.throw(response.message.message)
     }else{
         for (const item of response.message.data){
-            if(item.expected_start_date === null || item.expected_end_date === null){
+            if(item.custom_project_actual_start_date === null || item.custom_project_actual_end_date === null){
                 frappe.throw('The expected start date or expected end date is missing. Please contact your system administrator to resolve this issue.')
                 return;
             }
-            start_date = item.expected_start_date
-            end_date = item.expected_end_date
+            start_date = item.custom_project_actual_start_date
+            end_date = item.custom_project_actual_end_date
             liaison_officer = item.custom_liaison_officer
             project_manager = item.project_manager
             on_behalf = item.custom_on_behalf
