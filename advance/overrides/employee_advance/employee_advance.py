@@ -11,6 +11,18 @@ def change_status(name):
     return {'status': 201, 'message': 'updated successfuly'}
 
 
+
+@frappe.whitelist()
+def change_workflow_status(name):
+    doc = frappe.get_doc('Employee Advance', name)
+    status = doc.status
+
+    if status == "Paid":
+        status = "paid"
+    
+    frappe.db.set_value("Employee Advance", name, "workflow_state", status, update_modified=True)
+    return {'status': 201, 'message': 'updated successfuly'}
+
 @frappe.whitelist()
 def get_lisson_officer(employee):
     response = frappe.db.sql(''' SELECT 

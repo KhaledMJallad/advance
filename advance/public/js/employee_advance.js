@@ -16,9 +16,18 @@ frappe.ui.form.on('Employee Advance', {
     },
     refresh: async function (frm) {
         
+
         await get_employee_number(frm)
         await get_project_data(frm)
         if(!frm.is_new()){
+
+            
+            if(frm.doc.docstatus === 1){
+                if(frm.doc.status !== frm.doc.workflow_state){
+                    await change_workflow_status_on_submit(frm)
+                }
+            }
+
             if(frm.doc.workflow_state === 'On Behalf'){
                 if(on_behalf === employee_number || frappe.user.has_role("System Manager")){
                     frm.page.actions_btn_group.show(); 
@@ -33,6 +42,8 @@ frappe.ui.form.on('Employee Advance', {
                 }
             }
         }
+
+
     },
 });
 
@@ -119,6 +130,24 @@ function cancel_petty_cash(frm){
             }else{
                 frappe.throw('An error has occurred. Please contact your administrator to resolve this issue.')
             }
+        }
+    })
+}
+
+
+
+async function change_workflow_status_on_submit(frm){
+    await frappe.call({
+        method:"advance.overrides.employee_advance.employee_advance.change_workflow_status",
+        args:{name:frm.doc.name},
+        callbanck:function(recponse){
+            if(recponse.message.status === 201){
+                frappe.show_alert({
+                    message: __("status has been cahnged successfully"),
+                    indicator: "green"
+                });
+            }
+            frm.reload_doc()
         }
     })
 }
