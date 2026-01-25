@@ -64,7 +64,6 @@ frappe.ui.form.on("Food Expenses", {
                     frm.page.actions_btn_group.hide();  
                 }
             }else if(frm.doc.workflow_state === 'Project Manager'){
-                console.log(project_manager)
                 if(project_manager === employee_number || frappe.user.has_role("System Manager")){
                     frm.page.actions_btn_group.show();
                 }else{
@@ -975,7 +974,7 @@ async function expsnes_details_table(frm) {
     const employees = [...new Set(expenses.map(r => r.employee))];
     let dayTotals = new Array(days.length).fill(0);
     for (const item of employees) {
-
+        
         const data = expenses
             .filter(r => r.employee === item)
             .sort((a, b) => new Date(a.expense_date) - new Date(b.expense_date));
@@ -993,10 +992,12 @@ async function expsnes_details_table(frm) {
             }
         }
         const date_and_expenses = days.map((d, i) => {
-            let [D, M] = d.date.split('/');
+            // console.log(d)
+            let [Y, D, M] = d.date.split('/');
+            Y = Y.padStart(2, '0')
             D = D.padStart(2, '0');
             M = M.padStart(2, '0');
-            const iso = `${year}-${M}-${D}`;
+            const iso = `${Y}-${M}-${D}`;
             const totalForDay = data
                 .filter(item => item.expense_date === iso)
                 .reduce((sum, item) => sum + item.amount, 0);
@@ -1059,9 +1060,10 @@ function getWorkWeekDaysWithDateShort(startDateStr, endDateStr) {
     if (dow >= 0 && dow <= 4) {
       const dd = String(cur.getDate()).padStart(2, '0');
       const mm = String(cur.getMonth() + 1).padStart(2, '0');
+      const yy = cur.getFullYear()
       result.push({
         day: dayNames[dow],
-        date: `${dd}/${mm}`
+        date: `${yy}/${dd}/${mm}`
       });
     }
     cur.setDate(cur.getDate() + 1);
