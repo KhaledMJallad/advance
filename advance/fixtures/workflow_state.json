@@ -75,10 +75,10 @@
   "docstatus": 0,
   "doctype": "Workflow State",
   "icon": "",
-  "modified": "2025-08-05 13:29:25.241209",
-  "name": "Supporting Services Director",
+  "modified": "2025-07-29 15:08:12.535640",
+  "name": "Initiator",
   "style": "",
-  "workflow_state_name": "Supporting Services Director"
+  "workflow_state_name": "Initiator"
  },
  {
   "docstatus": 0,
@@ -92,19 +92,19 @@
  {
   "docstatus": 0,
   "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-08-05 13:29:25.241209",
+  "name": "Supporting Services Director",
+  "style": "",
+  "workflow_state_name": "Supporting Services Director"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
   "icon": "ok-sign",
   "modified": "2025-04-20 12:56:21.887983",
   "name": "Approved",
   "style": "Success",
   "workflow_state_name": "Approved"
- },
- {
-  "docstatus": 0,
-  "doctype": "Workflow State",
-  "icon": "",
-  "modified": "2025-07-29 15:08:12.535640",
-  "name": "Initiator",
-  "style": "",
-  "workflow_state_name": "Initiator"
  }
 ]

@@ -6,9 +6,9 @@ let project_manager_email = null;
 let repeted = 0;
 frappe.ui.form.on('Expense Claim', {
     after_save:async function(frm){
-        await fetch_cost_center(frm);
-        await update_petty_cash(frm)
-        await share_file(frm)
+            await fetch_cost_center(frm);
+            await update_petty_cash(frm)
+            await share_file(frm)
     },
     after_workflow_action:async function(frm){
         if(frm.doc.workflow_state === "Approved" && (frm.doc.custom_espense_type === "Replenishment" || frm.doc.custom_espense_type === "Project petty-cash End")){
