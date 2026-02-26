@@ -19,7 +19,8 @@ frappe.ui.form.on("Petty-cash", {
                 frappe.route_options ={
                     'project': frm.doc.project,
                     'custom_pettycash': frm.doc.name,
-                    "custom_espense_type":frm.doc.petty_cash_type
+                    "custom_espense_type":frm.doc.petty_cash_type,
+                    "company":frm.doc.custom_company
                 };
                 frappe.new_doc('Expense Claim')
             break;
