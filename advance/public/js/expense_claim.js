@@ -15,7 +15,12 @@ frappe.ui.form.on('Expense Claim', {
             await update_food(frm)
         }
         if(frm.doc.workflow_state === 'Rejected' || frm.doc.workflow_state === "Initiator") return;
-            add_assigend_to(frm)
+        await add_assigend_to(frm)
+        
+
+       if(frm.doc.custom_espense_type === 'Replenishment' && frm.doc.workflow_state  === "Approved" ){
+           await create_new_advance(frm, frm.doc.total_sanctioned_amount)
+        }
     },
 
 
@@ -40,10 +45,6 @@ frappe.ui.form.on('Expense Claim', {
         }
 
 
-       if(frm.doc.custom_espense_type === 'Replenishment' && (frm.selected_workflow_action  === "Approve" && frm.doc.workflow_state === "Accountant")){
-
-            await create_new_advance(frm, frm.doc.total_sanctioned_amount)
-        }
 
 
     },
