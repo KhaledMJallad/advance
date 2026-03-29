@@ -51,14 +51,17 @@ frappe.ui.form.on('Expense Claim', {
 	refresh:async function(frm) {
         if(frm.is_new()){
             if(!frm.doc.project) return;
-            await get_project_data(frm);
+            if(frm.doc.custom_espense_type !== "Expense Claim"){
+                await get_project_data(frm);
+
+            }
             if(frappe.user.has_role("System Manager")){
                 // if(!frm.doc.payable_account){
                 //     frm.set_value('payable_account', payable_account)
                 // }
-                frm.set_df_property('payable_account', 'read_only', false)
-                frm.set_df_property('employee', 'read_only', true)
-                frm.set_df_property('expense_approver', 'read_only', true)
+                // frm.set_df_property('payable_account', 'read_only', false)
+                // frm.set_df_property('employee', 'read_only', true)
+                // frm.set_df_property('expense_approver', 'read_only', true)
                 
                 frm.set_value('employee', on_behalf)
                 await get_project_manager_email(frm)
@@ -78,8 +81,8 @@ frappe.ui.form.on('Expense Claim', {
                     // }
        
                     frm.set_df_property('payable_account', 'read_only', true)
-                    frm.set_df_property('employee', 'read_only', true)
-                    frm.set_df_property('expense_approver', 'read_only', true)
+                    // frm.set_df_property('employee', 'read_only', true)
+                    // frm.set_df_property('expense_approver', 'read_only', true)
                     frm.set_value('employee', on_behalf)
                     await get_project_manager_email(frm)
                     await get_project_advance(frm)
@@ -96,7 +99,10 @@ frappe.ui.form.on('Expense Claim', {
                 }
             }   
         }else{
-            await get_project_data(frm);
+            if(frm.doc.custom_espense_type !== "Expense Claim"){
+                await get_project_data(frm);
+            }
+            
             await get_employee_number(frm);
             if((employee === liaison_officer || frappe.user.has_role("System Manager")) &&  frm.doc.custom_rejected_reason){
                 show_rejected_reson(frm);
@@ -388,7 +394,7 @@ async function get_employee_number(frm){
         args:{user:frappe.session.user}
     });
     if(response.message.status === 404){
-        frappe.throw('You are accessing this page incorrectly. Please access it through the proper procedure.')
+        // frappe.throw('You are accessing this page incorrectly. Please access it through the proper procedure.')
     }else{
         response.message.data.map((item) => {
             employee = item.name
