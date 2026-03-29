@@ -1,5 +1,6 @@
 [
  {
+  "custom_workflow_type_field": null,
   "docstatus": 0,
   "doctype": "Workflow",
   "document_type": "Employee Advance",
@@ -178,6 +179,7 @@
   "workflow_state_field": "workflow_state"
  },
  {
+  "custom_workflow_type_field": null,
   "docstatus": 0,
   "doctype": "Workflow",
   "document_type": "Expense Claim",
@@ -437,6 +439,7 @@
   "workflow_state_field": "workflow_state"
  },
  {
+  "custom_workflow_type_field": null,
   "docstatus": 0,
   "doctype": "Workflow",
   "document_type": "Food Expenses",

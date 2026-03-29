@@ -12,15 +12,6 @@
   "docstatus": 0,
   "doctype": "Workflow State",
   "icon": "",
-  "modified": "2025-09-08 18:17:18.077727",
-  "name": "paid",
-  "style": "Success",
-  "workflow_state_name": "paid"
- },
- {
-  "docstatus": 0,
-  "doctype": "Workflow State",
-  "icon": "",
   "modified": "2025-08-26 15:17:39.604379",
   "name": "Accountant Submit",
   "style": "",
@@ -39,19 +30,19 @@
   "docstatus": 0,
   "doctype": "Workflow State",
   "icon": "",
-  "modified": "2025-07-17 15:46:03.233948",
-  "name": "Accountant",
+  "modified": "2025-07-29 15:08:12.535640",
+  "name": "Initiator",
   "style": "",
-  "workflow_state_name": "Accountant"
+  "workflow_state_name": "Initiator"
  },
  {
   "docstatus": 0,
   "doctype": "Workflow State",
   "icon": "",
-  "modified": "2025-09-16 11:36:22.439122",
-  "name": "On Behalf",
-  "style": "",
-  "workflow_state_name": "On Behalf"
+  "modified": "2025-09-08 18:17:18.077727",
+  "name": "paid",
+  "style": "Success",
+  "workflow_state_name": "paid"
  },
  {
   "docstatus": 0,
@@ -66,6 +57,15 @@
   "docstatus": 0,
   "doctype": "Workflow State",
   "icon": "",
+  "modified": "2025-09-16 11:36:22.439122",
+  "name": "On Behalf",
+  "style": "",
+  "workflow_state_name": "On Behalf"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
   "modified": "2025-07-17 15:45:35.043986",
   "name": "Project Manager",
   "style": "",
@@ -75,10 +75,10 @@
   "docstatus": 0,
   "doctype": "Workflow State",
   "icon": "",
-  "modified": "2025-07-29 15:08:12.535640",
-  "name": "Initiator",
+  "modified": "2025-07-17 15:46:03.233948",
+  "name": "Accountant",
   "style": "",
-  "workflow_state_name": "Initiator"
+  "workflow_state_name": "Accountant"
  },
  {
   "docstatus": 0,
