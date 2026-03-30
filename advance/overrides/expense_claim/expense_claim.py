@@ -3,9 +3,7 @@ from frappe import _
 from hrms.hr.doctype.expense_claim.expense_claim import ExpenseClaim
 import json
 class CustomExpenseClaim(ExpenseClaim):
-
-    pass        
-        
+        pass
 
 
 @frappe.whitelist()
@@ -518,6 +516,15 @@ def update_petty_cash(name, petty_cash):
     return {'status': 201, 'message':"petty cash has been updated successfuly"}
 
 
+@frappe.whitelist()
+def get_company_by_employee(employee):
+    fetch_company = frappe.db.get_value('Employee', employee, 'company' )
+    
+    if fetch_company:
+        return {'status': 200, 'data':fetch_company}
+    else:
+        return {'status': 404, 'message': 'no company has been assigend to this employee'}
+    
 
 
 @frappe.whitelist()

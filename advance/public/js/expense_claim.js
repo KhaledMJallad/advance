@@ -23,7 +23,11 @@ frappe.ui.form.on('Expense Claim', {
         }
     },
 
-
+    employee:async function(frm){
+        if(frm.doc.custom_espense_type === "Expense Claim"){
+            get_employee_company(frm)
+        }
+    },
     before_workflow_action: async function (frm) {
         if(frm.selected_workflow_action === 'Reject'){
             frappe.dom.unfreeze();
@@ -522,4 +526,18 @@ function show_rejected_reson(frm){
             
 }
 
+
+function get_employee_company(frm){
+    frappe.call({
+        method:"advance.overrides.expense_claim.expense_claim.get_company_by_employee",
+        args:{employee:frm.doc.employee},
+        callback: async function(response){
+            if(response.message.status === 200){
+                frm.set_value('company', response.message.data)
+            }else{
+                frappe.throw(`No company has been assigend to employee ${frm.doc.employee}`)
+            }
+        }
+    })
+}
 
