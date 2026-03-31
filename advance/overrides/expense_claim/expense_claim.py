@@ -518,8 +518,7 @@ def update_petty_cash(name, petty_cash):
 
 @frappe.whitelist()
 def get_company_by_employee(employee):
-    fetch_company = frappe.db.get_value('Employee', employee, 'company' )
-    
+    fetch_company = frappe.db.get_value('Employee', employee, ['company', 'expense_approver'], as_dict = True )
     if fetch_company:
         return {'status': 200, 'data':fetch_company}
     else:
