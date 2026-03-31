@@ -29,6 +29,7 @@ frappe.ui.form.on('Expense Claim', {
     employee:async function(frm){
         if(frm.doc.custom_espense_type === "Expense Claim"){
             get_employee_company(frm)
+            await get_all_advances(frm)
         }
     },
     before_workflow_action: async function (frm) {
@@ -72,7 +73,10 @@ frappe.ui.form.on('Expense Claim', {
                 
                 frm.set_value('employee', on_behalf)
                 await get_project_manager_email(frm)
-                await get_project_advance(frm)
+                if(frm.doc.custom_espense_type !== "Expense Claim"){
+                    await get_project_advance(frm)
+                }
+
                 frm.set_value('expense_approver', project_manager_email)
                 if(frm.doc.custom_espense_type === "Replenishment" || frm.doc.custom_espense_type === "Petty-cash Project End"){
                     frm.add_custom_button("Fetch Food", () => {
@@ -92,7 +96,9 @@ frappe.ui.form.on('Expense Claim', {
                     // frm.set_df_property('expense_approver', 'read_only', true)
                     frm.set_value('employee', on_behalf)
                     await get_project_manager_email(frm)
+                    if(frm.doc.custom_espense_type !== "Expense Claim"){
                     await get_project_advance(frm)
+                    }
                     frm.set_value('expense_approver', project_manager_email)
                     if(frm.doc.custom_espense_type === "Replenishment" || frm.doc.custom_espense_type === "Petty-cash Project End"){
                     frm.add_custom_button("Fetch Food", () => {
@@ -536,7 +542,8 @@ function get_employee_company(frm){
         args:{employee:frm.doc.employee},
         callback: async function(response){
             if(response.message.status === 200){
-                frm.set_value('company', response.message.data)
+                frm.set_value('company', response.message.data.company)
+                frm.set_value('expense_approver', response.message.data.expense_approver)
             }else{
                 frappe.throw(`No company has been assigend to employee ${frm.doc.employee}`)
             }

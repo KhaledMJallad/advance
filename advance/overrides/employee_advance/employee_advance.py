@@ -230,3 +230,13 @@ def update_petty_cash_status(name):
     frappe.db.set_value('Petty-cash', petty_cash[0], 'docstatus', 2)
     frappe.db.commit()
     return {'status': 201 , 'message': "Status has been updated successfully"}
+
+
+@frappe.whitelist()
+def fetch_compant_based_on_employee(employee):
+    company = frappe.db.get_value('Employee', employee, "company")
+
+    if company:
+        return {'status': 200 , 'data': company}
+    else:
+        return {'status': 404, 'message':"No company has been assigend to this user"}

@@ -15,10 +15,10 @@ frappe.ui.form.on('Employee Advance', {
         }
     },
     refresh: async function (frm) {
-        
-
         await get_employee_number(frm)
-        await get_project_data(frm)
+        if(frm.doc.frm.doc.custom_project){
+            await get_project_data(frm)
+        }
         if(!frm.is_new()){
 
             
@@ -45,6 +45,11 @@ frappe.ui.form.on('Employee Advance', {
 
 
     },
+    employee:function(frm){
+        if(!frm.doc.custom_project){
+            fetch_company_based_on_employee(frm)
+        }
+    }
 });
 
 
@@ -102,12 +107,12 @@ async function get_employee_number(frm){
         args:{user:frappe.session.user}
     })
    if(response.message.status === 404){
-        if(frappe.user.has_role("System Manager")){
-            frm.set_df_property('employee', 'read_only', true);
-        }else{
-            frm.set_df_property('employee', 'read_only', true);
-            frappe.throw(response.message.message);
-        }
+        // if(frappe.user.has_role("System Manager")){
+        //     frm.set_df_property('employee', 'read_only', true);
+        // }else{
+        //     frm.set_df_property('employee', 'read_only', true);
+        //     frappe.throw(response.message.message);
+        // }
    }else{
         response.message.data.forEach(item => employee = item.name)
         employee_number = employee;
@@ -134,6 +139,18 @@ function cancel_petty_cash(frm){
     })
 }
 
+
+function fetch_company_based_on_employee(frm){
+    frappe.call({
+        method:"advance.overrides.employee_advance.employee_advance.fetch_compant_based_on_employee",
+        args:{employee:frm.doc.employee},
+        callback:function(response){
+            if(response.message.status === 200){
+                frm.set_value("company",response.message.data)   
+            }
+        }
+    })
+}
 
 
 async function change_workflow_status_on_submit(frm){
