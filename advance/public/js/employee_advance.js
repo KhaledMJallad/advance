@@ -8,7 +8,9 @@ frappe.ui.form.on('Employee Advance', {
         await change_wf_status(frm)
     },
     after_workflow_action:async function(frm){
-        await get_project_data(frm)
+        if(frm.doc.custom_project){
+            await get_project_data(frm)
+        }
         add_assigen_to(frm)
         if(frm.doc.workflow_state === "Rejected"){
             cancel_petty_cash(frm);
@@ -16,7 +18,7 @@ frappe.ui.form.on('Employee Advance', {
     },
     refresh: async function (frm) {
         await get_employee_number(frm)
-        if(frm.doc.frm.doc.custom_project){
+        if(frm.doc.custom_project){
             await get_project_data(frm)
         }
         if(!frm.is_new()){
