@@ -400,7 +400,7 @@ def get_employee_advance(project, employee):
         AND 
             `employee` = %s
         AND 
-            status = 'paid'
+            status = 'Paid'
         ''', (project, employee, ), as_dict=True)
     
         
@@ -467,7 +467,7 @@ def get_advances_without_project(employee):
         WHERE 
             `employee` = %s
             AND 
-                `status` = 'paid'
+                `status` = 'Paid'
             AND 
                 `custom_project` IS NULL 
         ORDER BY `posting_date` DESC
