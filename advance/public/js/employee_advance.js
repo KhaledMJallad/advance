@@ -16,7 +16,7 @@ frappe.ui.form.on('Employee Advance', {
     },
     refresh: async function (frm) {
         await get_employee_number(frm)
-        if(frm.doc.frm.doc.custom_project){
+        if(frm.doc.custom_project){
             await get_project_data(frm)
         }
         if(!frm.is_new()){
