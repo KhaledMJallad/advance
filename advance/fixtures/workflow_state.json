@@ -39,24 +39,6 @@
   "docstatus": 0,
   "doctype": "Workflow State",
   "icon": "",
-  "modified": "2025-09-08 18:17:18.077727",
-  "name": "paid",
-  "style": "Success",
-  "workflow_state_name": "paid"
- },
- {
-  "docstatus": 0,
-  "doctype": "Workflow State",
-  "icon": "",
-  "modified": "2025-09-08 14:13:32.087021",
-  "name": "unpaid",
-  "style": "Danger",
-  "workflow_state_name": "unpaid"
- },
- {
-  "docstatus": 0,
-  "doctype": "Workflow State",
-  "icon": "",
   "modified": "2025-09-16 11:36:22.439122",
   "name": "On Behalf",
   "style": "",
@@ -79,6 +61,24 @@
   "name": "Accountant",
   "style": "",
   "workflow_state_name": "Accountant"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-09-08 18:17:18.077727",
+  "name": "paid",
+  "style": "Success",
+  "workflow_state_name": "paid"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-09-08 14:13:32.087021",
+  "name": "unpaid",
+  "style": "Danger",
+  "workflow_state_name": "unpaid"
  },
  {
   "docstatus": 0,
