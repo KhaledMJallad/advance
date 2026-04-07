@@ -1,9 +1,42 @@
 import frappe
 from frappe import _
+
 from hrms.hr.doctype.expense_claim.expense_claim import ExpenseClaim
 import json
 class CustomExpenseClaim(ExpenseClaim):
         pass
+
+
+
+
+
+@frappe.whitelist()
+def skip_on_behalf_on_return(name):
+    if not name:
+        frappe.throw("Expense Claim name is required")
+
+    if not frappe.db.exists("Expense Claim", name):
+        frappe.throw(f"Expense Claim {name} not found")
+        
+    frappe.db.set_value('Expense Claim', name, 'workflow_state', 'Initiator')
+    frappe.db.commit()  
+
+    return {"status": 201 , 'message': 'no behalf has been skiped successfully'}
+
+
+@frappe.whitelist()
+def skip_on_behalf(name):
+    
+    if not name:
+        frappe.throw("Expense Claim name is required")
+        
+    if not frappe.db.exists("Expense Claim", name):
+        frappe.throw(f"Expense Claim {name} not found")
+
+    frappe.db.set_value('Expense Claim', name, 'workflow_state', 'Project Manager')
+    frappe.db.commit()
+    return {"status": 201 , "message": 'no behalf has been skiped successfully'}
+        
 
 
 @frappe.whitelist()

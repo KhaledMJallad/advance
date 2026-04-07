@@ -33,6 +33,17 @@ frappe.ui.form.on('Expense Claim', {
         }
     },
     before_workflow_action: async function (frm) {
+        if(frm.doc.custom_espense_type === "Expense Claim" && frm.doc.workflow_state === "Initiator"){
+            setTimeout(() => {
+                skip_on_behalf_status(frm);
+
+            }, 100)
+        }
+        if((frm.selected_workflow_action === "Return" && frm.doc.workflow_state === "Project Manager") && frm.doc.custom_espense_type === "Expense Claim"){
+            setTimeout(() => {
+                skip_on_behalf_in_return(frm)
+            }, 100)
+        }
         if(frm.selected_workflow_action === 'Reject'){
             frappe.dom.unfreeze();
             return new Promise(resolve => {
@@ -195,6 +206,40 @@ frappe.ui.form.on("Expense Claim Detail", {
     }
 });
 
+
+
+
+function skip_on_behalf_in_return(frm){
+    frappe.call({
+        method:"advance.overrides.expense_claim.expense_claim.skip_on_behalf_on_return",
+        args:{name:frm.doc.name},
+        callback:function(response){
+            if(response.message.status === 201){
+                frappe.show_alert({
+                    message: __("On Behalf has been skiped"),
+                    indicator: "green"
+                });
+                frm.reload_doc();
+            }
+        },
+    })
+}
+
+function skip_on_behalf_status(frm){
+    frappe.call({
+        method:"advance.overrides.expense_claim.expense_claim.skip_on_behalf",
+        args:{name:frm.doc.name},
+        callback:function(response){
+            if(response.message.status === 201){
+                frappe.show_alert({
+                    message: __("On Behalf has been skiped"),
+                    indicator: "green"
+                });
+                frm.reload_doc();
+            }
+        }
+    })
+}
 
 async function change_doc_type_status(frm){
     const response = frappe.call({
