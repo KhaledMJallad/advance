@@ -68,8 +68,12 @@ frappe.ui.form.on('Expense Claim', {
 
     },
 	refresh:async function(frm) {
+         if(frm.doc.custom_espense_type === "Expense Claim" && !frm.doc.employee){
+                get_employee_number_on_stand_alone(frm)
+            }
         if(frm.is_new()){
             if(!frm.doc.project) return;
+           
             if(frm.doc.custom_espense_type !== "Expense Claim"){
                 await get_project_data(frm);
 
@@ -207,6 +211,28 @@ frappe.ui.form.on("Expense Claim Detail", {
 });
 
 
+function get_employee_number_on_stand_alone(frm){
+    frappe.call({
+        method:"advance.overrides.expense_claim.expense_claim.get_employee_number_stand_alone",
+        args:{user_id: frappe.user.name},
+        callback:function(response){
+            console.log(response)
+            if(response.message.status === 200){
+                frm.set_value("employee", response.message.employee_num)
+                frappe.show_alert({
+                        message: __(response.message.message),
+                        indicator: "green"
+                });
+            }else{
+                frappe.show_alert({
+                        message: __(response.message.message),
+                        indicator: "red"
+                });
+
+            }
+        }
+    })
+}
 
 
 function skip_on_behalf_in_return(frm){
