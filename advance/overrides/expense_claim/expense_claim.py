@@ -9,6 +9,18 @@ class CustomExpenseClaim(ExpenseClaim):
 
 
 
+@frappe.whitelist()
+def get_employee_number_stand_alone(user_id):
+    if not user_id:
+        return {'status': 404, 'message': "no user id has been found"}
+    
+    employee_number = frappe.db.get_value("Employee", {"user_id": user_id}, "name")
+    
+    if employee_number:
+        return {'status': 200, 'message': "Employee number has been fetched successfully", "employee_num": employee_number}
+    else:
+        return {"status": 404, "message": "No employee number has been assigend to this user"}
+
 
 @frappe.whitelist()
 def skip_on_behalf_on_return(name):
