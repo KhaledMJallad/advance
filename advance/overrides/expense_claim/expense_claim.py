@@ -4,7 +4,8 @@ from frappe import _
 from hrms.hr.doctype.expense_claim.expense_claim import ExpenseClaim
 import json
 class CustomExpenseClaim(ExpenseClaim):
-        pass
+    pass
+
 
 
 
@@ -30,7 +31,7 @@ def skip_on_behalf_on_return(name):
     if not frappe.db.exists("Expense Claim", name):
         frappe.throw(f"Expense Claim {name} not found")
         
-    frappe.db.set_value('Expense Claim', name, 'workflow_state', 'Initiator')
+    frappe.db.set_value('Expense Claim', name, 'workflow_state', 'HR User')
     frappe.db.commit()  
 
     return {"status": 201 , 'message': 'no behalf has been skiped successfully'}
@@ -45,8 +46,11 @@ def skip_on_behalf(name):
     if not frappe.db.exists("Expense Claim", name):
         frappe.throw(f"Expense Claim {name} not found")
 
-    frappe.db.set_value('Expense Claim', name, 'workflow_state', 'Project Manager')
+    add_assigened_to('HR User', name)
+
+    frappe.db.set_value('Expense Claim', name, 'workflow_state', 'HR User')
     frappe.db.commit()
+
     return {"status": 201 , "message": 'no behalf has been skiped successfully'}
         
 
@@ -56,6 +60,57 @@ def force_to_save(name):
     doc =  frappe.get_doc('Expense Claim', name)
     doc.insert(ignore_permissions=True)
     return {"status": 201, 'message': "data has been saved successfuly"}
+
+
+
+
+def add_assigened_to(workflow_state, name):
+    users = frappe.db.sql(
+        """
+        SELECT DISTINCT hr.parent AS user_id
+        FROM `tabHas Role` hr
+        JOIN `tabUser` u ON u.name = hr.parent
+        WHERE hr.role = %s
+        AND hr.parenttype = 'User'
+        AND u.enabled = 1
+        AND u.user_type = 'System User'
+        AND u.name != 'Administrator'
+        """,
+        (workflow_state,),
+        as_dict=True,
+    )
+    status = ["Open", "Pending"]
+
+    for item in users:
+        user_id = item["user_id"]
+        
+        # Check if ToDo already exists and is still open/pending
+        exists = frappe.db.exists(
+            "ToDo",
+            {
+                "reference_type": "Expense Claim",
+                "reference_name": name,
+                "allocated_to": user_id,
+                "status": ("in", status),
+            },
+        )
+
+        if not exists:
+            todo = frappe.get_doc(
+                {
+                    "doctype": "ToDo",
+                    "allocated_to": user_id,
+                    "reference_type": "Expense Claim",
+                    "reference_name": name,
+                    "description": "Please approve the employee signtuer {name}",
+                    "priority": "High",
+                    "status": "Open",
+                    "date": frappe.utils.today(),
+                }
+            )
+            todo.insert(ignore_permissions=True)
+
+
 
 #########################################################################
 # @frappe.whitelist()
