@@ -13,12 +13,25 @@ frappe.ui.form.on('Expense Claim', {
 
         }
     },
+    project:function(frm){
+        if(frm.doc.custom_espense_type === "Expense Claim"){
+            get_project_data(frm);
+        }
+    },
     after_workflow_action:async function(frm){
         if(frm.doc.workflow_state === "Approved" && (frm.doc.custom_espense_type === "Replenishment" || frm.doc.custom_espense_type === "Project petty-cash End")){
             await update_food(frm)
         }
         if(frm.doc.workflow_state === 'Rejected' || frm.doc.workflow_state === "Initiator") return;
-        await add_assigend_to(frm)
+        if(frm.doc.custom_espense_type === "Expense Claim"){
+            if(frm.doc.workflow_state !== "Initiator"){
+                await add_assigend_to(frm)
+                
+            }
+        }else{
+            await add_assigend_to(frm)
+
+        }
         
 
        if(frm.doc.custom_espense_type === 'Replenishment' && frm.doc.workflow_state  === "Approved" ){
@@ -33,6 +46,14 @@ frappe.ui.form.on('Expense Claim', {
         }
     },
     before_workflow_action: async function (frm) {
+        if(frm.doc.custom_espense_type === "Expense Claim" && frm.doc.workflow_state === "HR User"){
+            if(!frm.doc.project){
+            frappe.dom.unfreeze();
+            frappe.throw('Project is required for the Expense Claim.')
+            }
+        
+
+        }
         if(frm.doc.custom_espense_type === "Expense Claim" && frm.doc.workflow_state === "Initiator"){
             setTimeout(() => {
                 skip_on_behalf_status(frm);
@@ -127,8 +148,10 @@ frappe.ui.form.on('Expense Claim', {
                 }
             }   
         }else{
-            if(frm.doc.custom_espense_type !== "Expense Claim"){
+            if(frm.doc.project){
                 await get_project_data(frm);
+            }
+            if(frm.doc.custom_espense_type !== "Expense Claim"){
                 await get_employee_number(frm);
                 if((employee === liaison_officer || frappe.user.has_role("System Manager")) &&  frm.doc.custom_rejected_reason){
                     show_rejected_reson(frm);
@@ -157,10 +180,13 @@ frappe.ui.form.on('Expense Claim', {
             }else{
 
                 const employee_number = await get_employee_number_on_stand_alone(frm)
-                if((employee_number.message.employee_num !== frm.doc.employee) && frm.doc.workflow_state === 'Initiator'){
-                    frm.page.actions_btn_group.hide();
-                }else{
-                    frm.page.actions_btn_group.show();
+                if(frm.doc.workflow_state === 'Initiator'){
+                    if((employee_number.message.employee_num === frm.doc.employee || frappe.user.has_role("System Manager"))){
+                        frm.page.actions_btn_group.show();
+                    }else{
+                        frm.page.actions_btn_group.hide();
+                    }
+
                 }
             }
             
@@ -262,6 +288,14 @@ function skip_on_behalf_in_return(frm){
     })
 }
 
+
+function throw_error_message(frm){
+    frappe.call({
+        method:"advance.overrides.expense_claim.expense_claim.throw_error_message",
+        args:{name:frm.doc.name}
+    })
+}
+
 function skip_on_behalf_status(frm){
     frappe.call({
         method:"advance.overrides.expense_claim.expense_claim.skip_on_behalf",
@@ -301,7 +335,10 @@ async function change_employee_to_on_on_behalf(frm){
 async function add_assigend_to(frm){
     const response = await frappe.call({
         method:"advance.overrides.expense_claim.expense_claim.share_with_and_assign_to",
-        args:{workflow_state:frm.doc.workflow_state, name:frm.doc.name, project_manager:project_manager, on_behalf:on_behalf}
+        args:{workflow_state:frm.doc.workflow_state, name:frm.doc.name, project_manager:project_manager, on_behalf:on_behalf},
+        callback:function(response){
+            frm.reload_doc();
+        }
     })
 
 }
