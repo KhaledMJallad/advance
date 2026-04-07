@@ -13,9 +13,10 @@ frappe.ui.form.on('Expense Claim', {
 
         }
     },
-    project:function(frm){
+    project:async function(frm){
         if(frm.doc.custom_espense_type === "Expense Claim"){
             get_project_data(frm);
+            fetch_cost_center_wihtout_puable_account(frm);
         }
     },
     after_workflow_action:async function(frm){
@@ -472,6 +473,19 @@ async function food_poopup(frm){
             d.show();
 }
 
+function fetch_cost_center_wihtout_puable_account(frm){
+    frappe.call({
+        method:"advance.overrides.expense_claim.expense_claim.fetch_cost_center_without_pyable_account",
+        args:{name:frm.doc.name, comp:frm.doc.company, porj:frm.doc.project},
+        callback:function(response){
+            if(response.message.status === 200){
+                if(response.message.data !== frm.doc.cost_center){
+                    frm.set_value('cost_center', response.message.data)
+                }
+            }
+        }
+    })
+}
 
 async function fetch_cost_center(frm){
     frappe.call({
