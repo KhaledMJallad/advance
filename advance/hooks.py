@@ -12,7 +12,7 @@ fixtures = [
     },
     {
         "dt": "Workflow State",
-        "filters": [["workflow_state_name", "in", ["Initiator", "Project Manager", "Accountant", "CFO", "Supporting Services Director", "Approved", "Rejected", "Accountant Submit", "unpaid", "paid", "On Behalf", "Cancel"]]]
+        "filters": [["workflow_state_name", "in", ["Initiator", "Project Manager", "Accountant", "CFO", "Supporting Services Director", "Approved", "Rejected", "Accountant Submit", "unpaid", "paid", "On Behalf", "Cancel", "HR User"]]]
     },
     {"dt": "DocType", "filters": [["name", "=", "Expense Claim Detail"]]}
 ]
