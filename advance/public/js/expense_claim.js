@@ -129,33 +129,41 @@ frappe.ui.form.on('Expense Claim', {
         }else{
             if(frm.doc.custom_espense_type !== "Expense Claim"){
                 await get_project_data(frm);
+                await get_employee_number(frm);
+                if((employee === liaison_officer || frappe.user.has_role("System Manager")) &&  frm.doc.custom_rejected_reason){
+                    show_rejected_reson(frm);
+                } 
+    
+                if(frm.doc.workflow_state === 'On Behalf'){
+                    if(on_behalf === employee || frappe.user.has_role("System Manager")){
+                        frm.page.actions_btn_group.show(); 
+                    }else{
+                        frm.page.actions_btn_group.hide();  
+                    }
+                }else if(frm.doc.workflow_state === 'Project Manager'){
+                    if(project_manager === employee || frappe.user.has_role("System Manager")){
+                        frm.page.actions_btn_group.show();
+                    }else{
+                        frm.page.actions_btn_group.hide();
+                    }
+                }
+    
+                if(frappe.user.has_role('Accounts User') || frappe.user.has_role('System Manager')){
+                    frm.set_df_property('payable_account', 'read_only', false)
+                    
+                }else{
+                    frm.set_df_property('payable_account', 'read_only', true)
+                }
+            }else{
+
+                const employee_number = await get_employee_number_on_stand_alone(frm)
+                if((employee_number.message.employee_num !== frm.doc.employee) && frm.doc.workflow_state === 'Initiator'){
+                    frm.page.actions_btn_group.hide();
+                }else{
+                    frm.page.actions_btn_group.show();
+                }
             }
             
-            await get_employee_number(frm);
-            if((employee === liaison_officer || frappe.user.has_role("System Manager")) &&  frm.doc.custom_rejected_reason){
-                show_rejected_reson(frm);
-            } 
-
-            if(frm.doc.workflow_state === 'On Behalf'){
-                if(on_behalf === employee || frappe.user.has_role("System Manager")){
-                    frm.page.actions_btn_group.show(); 
-                }else{
-                    frm.page.actions_btn_group.hide();  
-                }
-            }else if(frm.doc.workflow_state === 'Project Manager'){
-                if(project_manager === employee || frappe.user.has_role("System Manager")){
-                    frm.page.actions_btn_group.show();
-                }else{
-                    frm.page.actions_btn_group.hide();
-                }
-            }
-
-            if(frappe.user.has_role('Accounts User') || frappe.user.has_role('System Manager')){
-                frm.set_df_property('payable_account', 'read_only', false)
-                
-            }else{
-                frm.set_df_property('payable_account', 'read_only', true)
-            }
         }
 	},
     
@@ -211,18 +219,20 @@ frappe.ui.form.on("Expense Claim Detail", {
 });
 
 
-function get_employee_number_on_stand_alone(frm){
-    frappe.call({
+async function get_employee_number_on_stand_alone(frm){
+    const employee_number = await frappe.call({
         method:"advance.overrides.expense_claim.expense_claim.get_employee_number_stand_alone",
         args:{user_id: frappe.user.name},
         callback:function(response){
-            console.log(response)
             if(response.message.status === 200){
-                frm.set_value("employee", response.message.employee_num)
-                frappe.show_alert({
-                        message: __(response.message.message),
-                        indicator: "green"
-                });
+                if(!frm.doc.employee){
+                    frm.set_value("employee", response.message.employee_num)
+                    frappe.show_alert({
+                            message: __(response.message.message),
+                            indicator: "green"
+                    });
+                }
+                return response.message.employee_num
             }else{
                 frappe.show_alert({
                         message: __(response.message.message),
@@ -232,6 +242,7 @@ function get_employee_number_on_stand_alone(frm){
             }
         }
     })
+    return employee_number
 }
 
 
