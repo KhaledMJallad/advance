@@ -673,7 +673,7 @@ def fetch_cost_center(name, comp, porj):
         cost_center = cost_center[:last_index].strip()
 
     if  comp == 'iValueJOR':
-        cost_center += '- iJOR'
+        cost_center += ' - iJOR'
     elif comp == 'iValueUAE':
          cost_center += ' - iUAE'
     elif comp =='iValue KSA':
@@ -708,7 +708,7 @@ def fetch_cost_center_without_pyable_account(porj, name, comp):
         cost_center = cost_center[:last_index].strip()
 
     if  comp == 'iValueJOR':
-        cost_center += '- iJOR'
+        cost_center += ' - iJOR'
     elif comp == 'iValueUAE':
          cost_center += ' - iUAE'
     elif comp =='iValue KSA':
