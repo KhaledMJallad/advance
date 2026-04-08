@@ -11,6 +11,38 @@ class CustomExpenseClaim(ExpenseClaim):
 
 
 @frappe.whitelist()
+def add_on_behalf(employee, name):
+    # Check if ToDo already exists and is still open/pending
+    user_id = frappe.db.get_value("Employee", employee, "user_id")
+    status = ["Open", "Pending"]
+    exists = frappe.db.exists(
+            "ToDo",
+            {
+                "reference_type": "Expense Claim",
+                "reference_name": name,
+                "allocated_to": user_id,
+                "status": ("in", status),
+            },
+        )
+
+    if not exists:
+        todo = frappe.get_doc(
+                {
+                    "doctype": "ToDo",
+                    "allocated_to": user_id,
+                    "reference_type": "Expense Claim",
+                    "reference_name": name,
+                    "description": "Please approve the employee signtuer {name}",
+                    "priority": "High",
+                    "status": "Open",
+                    "date": frappe.utils.today(),
+                }
+            )
+        todo.insert(ignore_permissions=True)
+        frappe.share.add("Expense Claim", name, user_id, read=1, write=1, share=1)
+    return {'status': 201 , 'message': "on behalf has been added successflly"}
+
+@frappe.whitelist()
 def get_employee_number_stand_alone(user_id):
     if not user_id:
         return {'status': 404, 'message': "no user id has been found"}
@@ -109,7 +141,8 @@ def add_assigened_to(workflow_state, name):
                 }
             )
             todo.insert(ignore_permissions=True)
-
+       
+        frappe.share.add("Expense Claim", name, user_id, read=1, write=1, share=1)
 
 
 #########################################################################
