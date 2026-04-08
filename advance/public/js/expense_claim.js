@@ -27,16 +27,28 @@ frappe.ui.form.on('Expense Claim', {
         if(frm.doc.workflow_state === "Approved" && (frm.doc.custom_espense_type === "Replenishment" || frm.doc.custom_espense_type === "Project petty-cash End")){
             await update_food(frm)
         }
-        if(frm.doc.workflow_state === 'Rejected' || frm.doc.workflow_state === "Initiator") return;
-        if(frm.doc.custom_espense_type === "Expense Claim"){
-            if(frm.doc.workflow_state !== "Initiator"){
-                await add_assigend_to(frm)
-                
+        
+        if(frm.doc.custom_espense_type !== "Expense Claim"){
+            if(frm.doc.workflow_state !== "Initiator" && (frm.doc.workflow_state !== 'Rejected' || frm.doc.workflow_state !== 'Approved')){
+                await add_assigend_to(frm) 
             }
         }else{
-            await add_assigend_to(frm)
+            if((frm.doc.workflow_state !== "Initiator" || frm.doc.workflow_state !== "On Behalf") && (frm.doc.workflow_state !== 'Rejected' || frm.doc.workflow_state !== 'Approved')){
+                await add_assigend_to(frm)
+            }
 
         }
+        
+        // if(frm.doc.workflow_state === 'Rejected' || frm.doc.workflow_state === "Initiator") ;
+        // if(frm.doc.custom_espense_type === "Expense Claim"){
+        //     if(frm.doc.workflow_state !== "Initiator"){
+        //         await add_assigend_to(frm)
+                
+        //     }
+        // }else{
+        //     await add_assigend_to(frm)
+
+        // }
         
 
        if(frm.doc.custom_espense_type === 'Replenishment' && frm.doc.workflow_state  === "Approved" ){
@@ -108,18 +120,33 @@ frappe.ui.form.on('Expense Claim', {
                 }
             }
             if(frm.is_new() || frm.doc.workflow_state === "Initiator"){
-                if(curr_employee.message.employee_num === frm.doc.custom_liaison_officer || frappe.user.has_role("System Manager"))
+                if(curr_employee.message.employee_num === frm.doc.custom_liaison_officer || frappe.user.has_role("System Manager")){
                     if(frm.doc.custom_espense_type === "Replenishment" || frm.doc.custom_espense_type === "Petty-cash Project End"){
-                            frm.add_custom_button("Fetch Food", () => {
-                                food_poopup(frm)
+                        frm.add_custom_button("Fetch Food", () => {
+                            food_poopup(frm)
                             
                         });
+                        
+                    }
                 }
+            }
+            
+            if(frm.doc.workflow_state === "Initiator"){
+                if(curr_employee.message.employee_num !== frm.doc.custom_liaison_officer && !frappe.user.has_role("System Manager")){
+                    frm.page.actions_btn_group.hide();
+                }
+                
+            }else if(frm.doc.workflow_state === "On Behalf"){
+                if(curr_employee.message.employee_num !== frm.doc.employee && !frappe.user.has_role("System Manager")){
+                    frm.page.actions_btn_group.hide();
+                }
+
             }
         }else{
             await get_employee_number_on_stand_alone(frm)
             
         }
+        
 	},
     
 })
@@ -445,7 +472,7 @@ async function get_project_data(frm){
         //    liaison_officer = item.custom_liaison_officer
         project_manager_number = item.project_manager
         project_manager = item.project_manager
-        // on_behalf = item.custom_on_behalf   
+        on_behalf = item.custom_on_behalf   
         petty_cahs_amount = item.custom_pettycash_amount
        }) 
        const project_manager_data = await get_project_manager_email(project_manager_number)
