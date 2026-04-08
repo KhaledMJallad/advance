@@ -117,10 +117,8 @@ frappe.ui.form.on('Expense Claim', {
                 }
             }
         }else{
-            const curr_employee = await get_employee_number_on_stand_alone(frm)
-            if(frm.is_new()){
-                await get_all_advances(frm)
-            }
+            await get_employee_number_on_stand_alone(frm)
+            
         }
 	},
     
