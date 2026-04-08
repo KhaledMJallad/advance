@@ -29,8 +29,10 @@ frappe.ui.form.on('Expense Claim', {
         }
         
         if(frm.doc.custom_espense_type !== "Expense Claim"){
-            if(frm.doc.workflow_state !== "Initiator" && (frm.doc.workflow_state !== 'Rejected' || frm.doc.workflow_state !== 'Approved')){
+            if((frm.doc.workflow_state !== "Initiator" && frm.doc.workflow_state !== "On Behalf") && (frm.doc.workflow_state !== 'Rejected' || frm.doc.workflow_state !== 'Approved')){
                 await add_assigend_to(frm) 
+            }else if(frm.doc.workflow_state === "On Behalf" && (frm.doc.workflow_state !== 'Rejected' || frm.doc.workflow_state !== 'Approved')){
+                await assigenn_to_on_behalf(frm)
             }
         }else{
             if((frm.doc.workflow_state !== "Initiator" || frm.doc.workflow_state !== "On Behalf") && (frm.doc.workflow_state !== 'Rejected' || frm.doc.workflow_state !== 'Approved')){
@@ -200,6 +202,23 @@ frappe.ui.form.on("Expense Claim Detail", {
     }
 });
 
+
+
+function assigenn_to_on_behalf(frm){
+    frappe.call({
+        method:"advance.overrides.expense_claim.expense_claim.add_on_behalf",
+        args:{employee:frm.doc.employee, name:frm.doc.name},
+        callback:function(response){
+            if(response.message.status === 201){
+                frappe.show_alert({
+                    message: __("On Behalf has been added"),
+                    indicator: "green"
+                });
+                frm.reload_doc();
+            }
+        }
+    })
+}
 
 async function get_employee_number_on_stand_alone(frm){
     const employee_number = await frappe.call({
@@ -472,7 +491,9 @@ async function get_project_data(frm){
         //    liaison_officer = item.custom_liaison_officer
         project_manager_number = item.project_manager
         project_manager = item.project_manager
-        on_behalf = item.custom_on_behalf   
+        // if(frm.doc.custom_espense_type !== "Expense Claim"){
+        //     on_behalf = item.custom_on_behalf   
+        // }
         petty_cahs_amount = item.custom_pettycash_amount
        }) 
        const project_manager_data = await get_project_manager_email(project_manager_number)
