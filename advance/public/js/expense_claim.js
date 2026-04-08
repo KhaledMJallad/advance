@@ -11,9 +11,14 @@ frappe.ui.form.on('Expense Claim', {
             await update_petty_cash(frm)
             await share_file(frm)
 
+        }else{
+            if(frm.doc.project){
+                fetch_cost_center_wihtout_puable_account(frm);
+            }
+
         }
     },
-    project:function(frm){
+    project:async function(frm){
         if(frm.doc.custom_espense_type === "Expense Claim"){
             get_project_data(frm);
         }
@@ -89,107 +94,33 @@ frappe.ui.form.on('Expense Claim', {
 
     },
 	refresh:async function(frm) {
-         if(frm.doc.custom_espense_type === "Expense Claim" && !frm.doc.employee){
-                get_employee_number_on_stand_alone(frm)
-            }
-        if(frm.is_new()){
-            if(!frm.doc.project) return;
-           
-            if(frm.doc.custom_espense_type !== "Expense Claim"){
-                await get_project_data(frm);
-
-            }
-            if(frappe.user.has_role("System Manager")){
-                // if(!frm.doc.payable_account){
-                //     frm.set_value('payable_account', payable_account)
-                // }
-                // frm.set_df_property('payable_account', 'read_only', false)
-                // frm.set_df_property('employee', 'read_only', true)
-                // frm.set_df_property('expense_approver', 'read_only', true)
-                
-                frm.set_value('employee', on_behalf)
-                await get_project_manager_email(frm)
-                if(frm.doc.custom_espense_type !== "Expense Claim"){
-                    await get_project_advance(frm)
-                }
-
-                frm.set_value('expense_approver', project_manager_email)
-                if(frm.doc.custom_espense_type === "Replenishment" || frm.doc.custom_espense_type === "Petty-cash Project End"){
-                    frm.add_custom_button("Fetch Food", () => {
-                        food_poopup(frm)
-                    
-                    });
-                }
+        if(frm.doc.custom_espense_type !== "Expense Claim"){
+            const curr_employee = await get_employee_number_on_stand_alone(frm)
+            if(frm.is_new()){
+                await get_project_data(frm)
+                await get_project_advance(frm)
             }else{
-                await get_employee_number(frm);
-                if(employee === liaison_officer){
-                    // if(!frm.doc.payable_account){
-                    //     frm.set_value('payable_account', payable_account)
-                    // }
-       
-                    frm.set_df_property('payable_account', 'read_only', true)
-                    // frm.set_df_property('employee', 'read_only', true)
-                    // frm.set_df_property('expense_approver', 'read_only', true)
-                    frm.set_value('employee', on_behalf)
-                    await get_project_manager_email(frm)
-                    if(frm.doc.custom_espense_type !== "Expense Claim"){
-                    await get_project_advance(frm)
+                await get_project_data(frm)
+                if(frm.doc.workflow_state === "Project Manager"){
+                    if(curr_employee !== project_manager && !frappe.user.has_role("System Manager")){
+                        frm.page.actions_btn_group.hide();
                     }
-                    frm.set_value('expense_approver', project_manager_email)
+                }
+            }
+            if(frm.is_new() || frm.doc.workflow_state === "Initiator"){
+                if(curr_employee.message.employee_num === frm.doc.custom_liaison_officer || frappe.user.has_role("System Manager"))
                     if(frm.doc.custom_espense_type === "Replenishment" || frm.doc.custom_espense_type === "Petty-cash Project End"){
-                    frm.add_custom_button("Fetch Food", () => {
-                        food_poopup(frm)
-                    
-                    });
+                            frm.add_custom_button("Fetch Food", () => {
+                                food_poopup(frm)
+                            
+                        });
                 }
-                }else{
-                    frm.set_df_property('employee', 'read_only', false)
-                    frm.set_df_property('expense_approver', 'read_only', false)
-                }
-            }   
+            }
         }else{
-            if(frm.doc.project){
-                await get_project_data(frm);
+            const curr_employee = await get_employee_number_on_stand_alone(frm)
+            if(frm.is_new()){
+                await get_all_advances(frm)
             }
-            if(frm.doc.custom_espense_type !== "Expense Claim"){
-                await get_employee_number(frm);
-                if((employee === liaison_officer || frappe.user.has_role("System Manager")) &&  frm.doc.custom_rejected_reason){
-                    show_rejected_reson(frm);
-                } 
-    
-                if(frm.doc.workflow_state === 'On Behalf'){
-                    if(on_behalf === employee || frappe.user.has_role("System Manager")){
-                        frm.page.actions_btn_group.show(); 
-                    }else{
-                        frm.page.actions_btn_group.hide();  
-                    }
-                }else if(frm.doc.workflow_state === 'Project Manager'){
-                    if(project_manager === employee || frappe.user.has_role("System Manager")){
-                        frm.page.actions_btn_group.show();
-                    }else{
-                        frm.page.actions_btn_group.hide();
-                    }
-                }
-    
-                if(frappe.user.has_role('Accounts User') || frappe.user.has_role('System Manager')){
-                    frm.set_df_property('payable_account', 'read_only', false)
-                    
-                }else{
-                    frm.set_df_property('payable_account', 'read_only', true)
-                }
-            }else{
-
-                const employee_number = await get_employee_number_on_stand_alone(frm)
-                if(frm.doc.workflow_state === 'Initiator'){
-                    if((employee_number.message.employee_num === frm.doc.employee || frappe.user.has_role("System Manager"))){
-                        frm.page.actions_btn_group.show();
-                    }else{
-                        frm.page.actions_btn_group.hide();
-                    }
-
-                }
-            }
-            
         }
 	},
     
@@ -404,7 +335,6 @@ async function update_food(frm) {
     });
 }
 
-
 async function food_poopup(frm){
     let total_amount = 0;
     let name_arr = [];
@@ -472,6 +402,19 @@ async function food_poopup(frm){
             d.show();
 }
 
+function fetch_cost_center_wihtout_puable_account(frm){
+    frappe.call({
+        method:"advance.overrides.expense_claim.expense_claim.fetch_cost_center_without_pyable_account",
+        args:{name:frm.doc.name, comp:frm.doc.company, porj:frm.doc.project},
+        callback:function(response){
+            if(response.message.status === 200){
+                if(response.message.data !== frm.doc.cost_center){
+                    frm.set_value('cost_center', response.message.data)
+                }
+            }
+        }
+    })
+}
 
 async function fetch_cost_center(frm){
     frappe.call({
@@ -490,6 +433,8 @@ async function fetch_cost_center(frm){
 }
 
 async function get_project_data(frm){
+    let project_manager_number = ""
+    let user_id = ""
     const response = await frappe.call({
         method:"advance.overrides.expense_claim.expense_claim.get_project_data_expense",
         args:{project:frm.doc.project}
@@ -498,19 +443,26 @@ async function get_project_data(frm){
     if(response.message.status === 404){
         frappe.throw(response.message.message)
     }else{
-
        response.message.data.map((item) =>{
-           liaison_officer = item.custom_liaison_officer
-           project_manager = item.project_manager
-           on_behalf = item.custom_on_behalf
-           petty_cahs_amount = item.custom_pettycash_amount
+        //    liaison_officer = item.custom_liaison_officer
+        project_manager_number = item.project_manager
+        project_manager = item.project_manager
+        // on_behalf = item.custom_on_behalf   
+        petty_cahs_amount = item.custom_pettycash_amount
        }) 
+       const project_manager_data = await get_project_manager_email(project_manager_number)
+       if(!frm.doc.expense_approver){
+            project_manager_data.message.data.map((item) => {
+                user_id = item.user_id
+            })
+            frm.set_value("expense_approver", user_id)
+       }
     }
 }
-async function get_project_manager_email(frm){
+async function get_project_manager_email(project_manager_number){
     const response = await frappe.call({
         method:"advance.overrides.expense_claim.expense_claim.get_project_manager_email",
-        args:{epmloyee:project_manager}
+        args:{epmloyee:project_manager_number}
     });
     if(response.message.status === 404){
     }else{
@@ -519,6 +471,8 @@ async function get_project_manager_email(frm){
         })
         
     }
+
+    return response
 }
 async function get_employee_number(frm){
     const response = await frappe.call({
@@ -547,7 +501,6 @@ async function get_project_advance(frm){
     frm.refresh_field("advances")
     if(response.message.status === 200){
         response.message.data.forEach(item => name_of_advance.push(item.name))
-        console.log(response.message.data)
         name_of_advance.map((item) => {
         	let row = frm.add_child("advances");
         	frappe.model.set_value(row.doctype, row.name, "employee_advance", item);
