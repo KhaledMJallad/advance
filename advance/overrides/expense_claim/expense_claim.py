@@ -26,13 +26,16 @@ def image_show(self):
         if row.invoice_image:
             if row.invoice_image.startswith("/private/files/"):
                 file_doc_name = frappe.db.get_value("File", {"file_url": row.invoice_image}, "name")
-                
 
                 old_file = frappe.get_doc("File", file_doc_name)
                 
                 old_file.is_private = 0
+                frappe.throw(str(old_file.file_url))   
 
                 old_file.save(ignore_permissions=True)
+                
+                
+                
                 new_file = frappe.get_doc({
                         "doctype": "File",
                         "file_url": old_file.file_url,
@@ -704,11 +707,7 @@ def fetch_food(project, employee):
 
 
 
-@frappe.whitelist()
-def update_petty_cash(name, petty_cash):
-    frappe.db.set_value("Petty-cash", petty_cash, "custom_expense_claim", name, update_modified=True)
-    frappe.db.commit()
-    return {'status': 201, 'message':"petty cash has been updated successfuly"}
+
 
 
 @frappe.whitelist()
