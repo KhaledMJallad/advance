@@ -6,8 +6,8 @@ from hrms.hr.doctype.expense_claim.expense_claim import ExpenseClaim
 import json
 class CustomExpenseClaim(ExpenseClaim):
     def validate(self):
-        if self.is_new():
-            fetch_cost_center_and_pyable_account(self) 
+        
+        fetch_cost_center_and_pyable_account(self) 
         image_show(self)
         update_expense_claim_advances(self)
         if self.custom_espense_type != "Expense Claim":
@@ -106,6 +106,7 @@ def fetch_cost_center_and_pyable_account(self):
     for row in self.expenses:
         row.cost_center = cost_center
         row.project = self.project
+    
     self.cost_center = cost_center
     
     if self.custom_espense_type != "Expense Claim":
