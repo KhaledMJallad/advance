@@ -468,7 +468,6 @@ def image_show(name):
                 })
                 
                 file_doc.insert(ignore_permissions=True)
-                frappe.msgprint(file_doc.name)
     return {'status': 201, 'message': 'Files have been shared successfully'}
 
 @frappe.whitelist()
