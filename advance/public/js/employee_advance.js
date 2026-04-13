@@ -4,6 +4,12 @@ let employee_number = 0;
 let project_manager = null;
 let on_behalf = null;
 frappe.ui.form.on('Employee Advance', {
+    after_save:function(frm){
+        if(!frm.doc.custom_project){
+            assigned_directly_to_Accountant(frm)
+
+        }
+    },
     before_cancel: async function (frm) {
         await change_wf_status(frm)
     },
@@ -11,6 +17,7 @@ frappe.ui.form.on('Employee Advance', {
         if(frm.doc.custom_project){
             await get_project_data(frm)
         }
+        
         add_assigen_to(frm)
         if(frm.doc.workflow_state === "Rejected"){
             cancel_petty_cash(frm);
@@ -54,7 +61,21 @@ frappe.ui.form.on('Employee Advance', {
     }
 });
 
-
+function assigned_directly_to_Accountant(frm){
+    frappe.call({
+        method:"advance.overrides.employee_advance.employee_advance.assigned_directly_to_Accountant",
+        args:{name:frm.doc.name},
+        callback:function(response){
+            if(response.message.status === 201){
+                frappe.show_alert({
+                    message: __("On Behalf has been added"),
+                    indicator: "green"
+                });
+                frm.reload_doc();
+            }
+        }
+    })
+}
 
 async function get_project_data(frm){
       const response = await frappe.call({
