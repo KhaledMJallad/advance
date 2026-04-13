@@ -1,32 +1,108 @@
 import frappe
 from frappe.utils import flt
 from frappe import _
-
+from frappe.utils.file_manager import get_file, save_file
 from hrms.hr.doctype.expense_claim.expense_claim import ExpenseClaim
 import json
 class CustomExpenseClaim(ExpenseClaim):
-    pass
+    def validate(self):
+        if self.is_new():
+            fetch_cost_center_and_pyable_account(self) 
+        image_show(self)
+        update_expense_claim_advances(self)
+        if self.custom_espense_type != "Expense Claim":
+            update_petty_cash(self)
 
 
 
 
 
-@frappe.whitelist()
-def update_expense_claim_advances(name):
-    doc = frappe.get_doc("Expense Claim", name)
 
-    if not doc.advances or len(doc.advances) == 0:
+
+
+
+def image_show(self):
+    for row in self.expenses:
+        if row.invoice_image:
+            if row.invoice_image.startswith("/private/files/"):
+                file_doc_name = frappe.db.get_value("File", {"file_url": row.invoice_image}, "name")
+                
+
+                old_file = frappe.get_doc("File", file_doc_name)
+                
+                old_file.is_private = 0
+
+                old_file.save(ignore_permissions=True)
+                new_file = frappe.get_doc({
+                        "doctype": "File",
+                        "file_url": old_file.file_url,
+                        "file_name": old_file.file_name,
+                        "attached_to_doctype": "Expense Claim",
+                        "attached_to_name": self.name,
+                        "is_private": 0
+                    })
+
+
+                new_file.save(ignore_permissions=True)
+                
+
+                row.invoice_image = old_file.file_url
+  
+
+
+
+
+def update_petty_cash(self):
+    if self.custom_pettycash:
+        frappe.db.set_value("Petty-cash", self.custom_pettycash, "custom_expense_claim", self.name, update_modified=True)
+        frappe.db.commit()
+
+def fetch_cost_center_and_pyable_account(self):
+    if not self.project:
+        frappe.throw("please insert a project before save")
+
+    cost_center = frappe.db.get_value('Project', self.project, 'cost_center')
+
+
+    last_index = cost_center.rfind('-')
+    
+    if last_index != -1:
+        cost_center = cost_center[:last_index].strip()
+
+    if  self.company == 'iValueJOR':
+        cost_center += ' - iJOR'
+    elif self.company == 'iValueUAE':
+         cost_center += ' - iUAE'
+    elif self.company =='iValue KSA':
+        cost_center += ' - iKSA'
+    else:
+        cost_center += ' - iV'
+
+    
+
+    for row in self.expenses:
+        row.cost_center = cost_center
+        row.project = self.project
+    self.cost_center = cost_center
+    
+    if self.custom_espense_type != "Expense Claim":
+        self.payable_account = "1620 - Petty Cash - iKSA"
+    
+
+
+def update_expense_claim_advances(self):
+    if not self.advances or len(self.advances) == 0:
         return {"status": 203, "message": "No advances found"}
 
     # choose the total you want to distribute
-    grand_total = flt(doc.total_sanctioned_amount or 0)
+    grand_total = flt(self.total_sanctioned_amount or 0)
 
     if grand_total <= 0:
         return {"status": 203, "message": "Grand total / sanctioned amount is zero"}
 
     remaining_amount = grand_total
 
-    for item in doc.advances:
+    for item in self.advances:
         unclaimed_amount = flt(item.unclaimed_amount or 0)
 
         if remaining_amount <= 0:
@@ -40,12 +116,7 @@ def update_expense_claim_advances(name):
             item.allocated_amount = unclaimed_amount
             remaining_amount -= unclaimed_amount
 
-    doc.save(ignore_permissions=True)
 
-    return {
-        "status": 201,
-        "message": "Advance amounts updated successfully"
-    }
 
 @frappe.whitelist()
 def add_on_behalf(employee, name):
@@ -443,32 +514,7 @@ def change_doc_type_status(name):
     doc.docstatus = 1   
     doc.save()
 
-@frappe.whitelist()
-def image_show(name):
-    doc = frappe.get_doc("Expense Claim", name)
-    
-    for row in doc.expenses:
-        if row.invoice_image:
-            if row.invoice_image.startswith("/files/") or row.invoice_image.startswith("/private/files/"):
-                file_doc_name = frappe.db.get_value("File", {"file_url": row.invoice_image}, "name")
-                
-                frappe.db.set_value("File", file_doc_name, "is_private", 0)
-                frappe.db.commit()
 
-                file_url = frappe.db.get_value("File", file_doc_name, ['file_name', 'file_url'])
-
-                updated_file_name, updated_file_url = file_url
-                file_doc = frappe.get_doc({
-                    "doctype": "File",
-                    "file_url": updated_file_url,   
-                    "file_name": updated_file_name,
-                    "attached_to_doctype": "Expense Claim",   # غيّرها حسب حالتك
-                    "attached_to_name": doc.name,             # parent document
-                    "is_private": 0
-                })
-                
-                file_doc.insert(ignore_permissions=True)
-    return {'status': 201, 'message': 'Files have been shared successfully'}
 
 @frappe.whitelist()
 def create_advance(name ,employee, petty_cash_amount, project, company, petty_cash):
@@ -715,31 +761,7 @@ def fetch_cost_center_without_pyable_account(porj, name, comp):
     if not porj:
         return {'status': 400, 'message': "No project has been inculded"}
     
-    cost_center = frappe.db.get_value('Project', porj, 'cost_center')
-
-    doc =  frappe.get_doc('Expense Claim', name)
-
-    last_index = cost_center.rfind('-')
-    if last_index != -1:
-        cost_center = cost_center[:last_index].strip()
-
-    if  comp == 'iValueJOR':
-        cost_center += ' - iJOR'
-    elif comp == 'iValueUAE':
-         cost_center += ' - iUAE'
-    elif comp =='iValue KSA':
-        cost_center += ' - iKSA'
-    else:
-        cost_center += ' - iV'
-
-    
-
-    for row in doc.expenses:
-        row.cost_center = cost_center
-        row.project = porj
-    doc.cost_center = cost_center
-    # doc.payable_account = "1620 - Petty Cash - iKSA"
-    doc.save()
+   
 
     return {"status": 201, 'message': "project and cost center has been fetched successfully"}
 

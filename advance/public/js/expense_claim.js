@@ -5,20 +5,6 @@ let employee = null;
 let project_manager_email = null;
 let repeted = 0;
 frappe.ui.form.on('Expense Claim', {
-    after_save:async function(frm){
-        await share_file(frm)
-        if(frm.doc.custom_espense_type !== "Expense Claim"){
-            await fetch_cost_center(frm);
-            await update_petty_cash(frm)
-            await ensue_allocated_amount_the_same_as_total_advance_amount(frm)
-        }else{
-            if(frm.doc.project){
-                fetch_cost_center_wihtout_puable_account(frm);
-                ensue_allocated_amount_the_same_as_total_advance_amount(frm)
-            }
-
-        }
-    },
     validate:function(frm){
         if(frm.doc.custom_espense_type === "Expense Claim"){
             const empty_attach = []
@@ -35,7 +21,7 @@ frappe.ui.form.on('Expense Claim', {
     
                 })
     
-                frappe.throw(`please add attach to records ${empty_recods_text} to continue the process`)
+                frappe.throw(`please add attach to records ${empty_recods_text} in expenses table to continue the process`)
             }
         }
     },
@@ -225,6 +211,25 @@ frappe.ui.form.on("Expense Claim Detail", {
 
 
 
+function after_save_in_pytte_cash(frm){
+    frappe.call({
+        method:"",
+        args:{name:frm.doc.name},
+        freeze: true,
+        freeze_message: __("Please waite..."),
+        callback:function(response){
+            if(response.message.status === 201){
+                frappe.show_alert({
+                    message: __("On Behalf has been added"),
+                    indicator: "green"
+                });
+                frm.reload_doc();
+            }
+        }
+
+    })
+}
+
 function assigenn_to_on_behalf(frm){
     frappe.call({
         method:"advance.overrides.expense_claim.expense_claim.add_on_behalf",
@@ -339,31 +344,6 @@ async function add_assigend_to(frm){
 
 }
 
-async function share_file(frm){
-    await frappe.call({
-        method:"advance.overrides.expense_claim.expense_claim.image_show",
-        args:{name:frm.doc.name},
-        freeze: true,
-        freeze_message: __("Uploading Files Please waite..."),
-        callback: function(r) {
-        if (r.message.status === 201) {
-            frappe.show_alert({
-                message: __("File linked successfully"),
-                indicator: "green"
-            }, 5);
-
-            // refresh the page after success
-            frm.reload_doc();
-        } else {
-            frappe.show_alert({
-                message: __("Failed to link file"),
-                indicator: "red"
-            }, 5);
-        }
-    }
-    });
-
-}
 
 async function create_new_advance(frm, petty_cahs_amount_data){
     const response = frappe.call({
@@ -402,23 +382,6 @@ async function update_food(frm) {
 
 
 
-function ensue_allocated_amount_the_same_as_total_advance_amount(frm){
-    frappe.call({
-        method:"advance.overrides.expense_claim.expense_claim.update_expense_claim_advances",
-        args:{name:frm.doc.name},
-        callback:function(response){
-            if(response.message.status === 201){
-                frappe.show_alert({
-                    message: __(response.message.message),
-                    indicator: "green"
-                });
-
-            // refresh the page after success
-            frm.reload_doc();
-            }
-        }
-    })
-}
 
 
 
@@ -489,23 +452,6 @@ async function food_poopup(frm){
             d.show();
 }
 
-function fetch_cost_center_wihtout_puable_account(frm){
-    frappe.call({
-        method:"advance.overrides.expense_claim.expense_claim.fetch_cost_center_without_pyable_account",
-        args:{name:frm.doc.name, comp:frm.doc.company, porj:frm.doc.project},
-        callback:function(response){
-            if(response.message.status === 201){
-                frappe.show_alert({
-                    message: __(response.message.message),
-                    indicator: "green"
-                });
-
-            // refresh the page after success
-            }
-            frm.reload_doc();
-        }
-    })
-}
 
 async function fetch_cost_center(frm){
     frappe.call({
@@ -652,30 +598,6 @@ async function get_all_advances(frm){
     }
 }
 
-async function update_petty_cash(frm){
-    frappe.call({
-        method:"advance.overrides.expense_claim.expense_claim.update_petty_cash",
-        args:{name:frm.doc.name, petty_cash:frm.doc.custom_pettycash},
-        freeze: true,
-        freeze_message: __("Updating petty-cash. Please waite..."),
-        callback: function(r) {
-        if (r.message.status === 201) {
-            frappe.show_alert({
-                message: __("File linked successfully"),
-                indicator: "green"
-            }, 5);
-
-            // refresh the page after success
-            frm.reload_doc();
-        } else {
-            frappe.show_alert({
-                message: __("Failed to link file"),
-                indicator: "red"
-            }, 5);
-        }
-    }
-    })
-}
 
 function show_rejected_reson(frm){
     if (repeted === 1) return;
