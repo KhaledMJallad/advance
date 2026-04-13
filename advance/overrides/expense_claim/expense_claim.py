@@ -140,8 +140,10 @@ def update_expense_claim_advances(self):
             item.allocated_amount = unclaimed_amount
             remaining_amount -= unclaimed_amount
 
-    self.grand_total = 0
-    self.total_advance_amount = self.total_sanctioned_amount
+    total_advance = sum(d.allocated_amount or 0 for d in self.advances)
+    self.grand_total = self.total_sanctioned_amount - total_advance 
+    self.total_advance_amount = total_advance
+    
 
 
 @frappe.whitelist()
