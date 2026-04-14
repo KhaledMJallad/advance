@@ -6,6 +6,7 @@ let project_manager_email = null;
 let repeted = 0;
 frappe.ui.form.on('Expense Claim', {
     validate:function(frm){
+        // check on the if photo exist
         if(frm.doc.custom_espense_type === "Expense Claim"){
             const empty_attach = []
             let empty_recods_text = ""
@@ -26,7 +27,8 @@ frappe.ui.form.on('Expense Claim', {
         }
     },
     project:async function(frm){
-        if(frm.doc.custom_espense_type === "Expense Claim"){
+        // always get the project data
+        if(frm.doc.project){
             get_project_data(frm);
         }
     },
@@ -36,29 +38,15 @@ frappe.ui.form.on('Expense Claim', {
         }
         
         if(frm.doc.custom_espense_type !== "Expense Claim"){
-            if((frm.doc.workflow_state !== "Initiator" && frm.doc.workflow_state !== "On Behalf") && (frm.doc.workflow_state !== 'Rejected' || frm.doc.workflow_state !== 'Approved')){
-                await add_assigend_to(frm) 
-            }else if(frm.doc.workflow_state === "On Behalf" && (frm.doc.workflow_state !== 'Rejected' || frm.doc.workflow_state !== 'Approved')){
-                await assigenn_to_on_behalf(frm)
-            }
+          if(frm.doc.workflow_state !== "Initiator" && (frm.doc.workflow_state !== "Approved" && frm.doc.workflow_state !== "Rejected")){
+            await add_assigend_to(frm)
+          }
         }else{
             if((frm.doc.workflow_state !== "Initiator" || frm.doc.workflow_state !== "On Behalf") && (frm.doc.workflow_state !== 'Rejected' || frm.doc.workflow_state !== 'Approved')){
                 await add_assigend_to(frm)
             }
 
         }
-        
-        // if(frm.doc.workflow_state === 'Rejected' || frm.doc.workflow_state === "Initiator") ;
-        // if(frm.doc.custom_espense_type === "Expense Claim"){
-        //     if(frm.doc.workflow_state !== "Initiator"){
-        //         await add_assigend_to(frm)
-                
-        //     }
-        // }else{
-        //     await add_assigend_to(frm)
-
-        // }
-        
 
        if(frm.doc.custom_espense_type === 'Replenishment' && frm.doc.workflow_state  === "Approved" ){
            await create_new_advance(frm, frm.doc.total_sanctioned_amount)
@@ -67,23 +55,18 @@ frappe.ui.form.on('Expense Claim', {
 
     employee:async function(frm){
         if(frm.doc.custom_espense_type === "Expense Claim"){
-            get_employee_company(frm)
+            get_employee_company(frm) 
             await get_all_advances(frm)
+        }else if(frm.doc.custom_espense_type === "Replenishment"){
+            await get_project_advance(frm)
+        }else if(frm.doc.custom_espense_type === "Petty-cash Project End"){
+            await get_project_advance(frm)
         }
     },
     before_workflow_action: async function (frm) {
-        if(frm.doc.custom_espense_type === "Expense Claim" && frm.doc.workflow_state === "HR User"){
-            if(!frm.doc.project){
-            frappe.dom.unfreeze();
-            frappe.throw('Project is required for the Expense Claim.')
-            }
-        
-
-        }
         if(frm.doc.custom_espense_type === "Expense Claim" && frm.doc.workflow_state === "Initiator"){
             setTimeout(() => {
                 skip_on_behalf_status(frm);
-
             }, 100)
         }
         if((frm.selected_workflow_action === "Return" && frm.doc.workflow_state === "Project Manager") && frm.doc.custom_espense_type === "Expense Claim"){
@@ -117,10 +100,7 @@ frappe.ui.form.on('Expense Claim', {
 	refresh:async function(frm) {
         if(frm.doc.custom_espense_type !== "Expense Claim"){
             const curr_employee = await get_employee_number_on_stand_alone(frm)
-            if(frm.is_new()){
-                await get_project_data(frm)
-                await get_project_advance(frm)
-            }else{
+            if(!frm.is_new()){
                 await get_project_data(frm)
                 if(frm.doc.workflow_state === "Project Manager"){
                     if(curr_employee !== project_manager && !frappe.user.has_role("System Manager")){
@@ -128,6 +108,7 @@ frappe.ui.form.on('Expense Claim', {
                     }
                 }
             }
+
             if(frm.is_new() || frm.doc.workflow_state === "Initiator"){
                 if(curr_employee.message.employee_num === frm.doc.custom_liaison_officer || frappe.user.has_role("System Manager")){
                     if(frm.doc.custom_espense_type === "Replenishment" || frm.doc.custom_espense_type === "Petty-cash Project End"){
@@ -155,14 +136,16 @@ frappe.ui.form.on('Expense Claim', {
             await get_employee_number_on_stand_alone(frm)
             
         }
-        
+  
+
 	},
     
 })
 
 frappe.ui.form.on("Expense Claim Detail", {
     invoice_image:function(frm, cdt, cdn){
-        frm.doc.__unsaved = false
+        frm.doc.__unsaved = false;
+        
     },
       invoice_no: function(frm, cdt, cdn) {
         const row = locals[cdt][cdn];
@@ -185,22 +168,7 @@ frappe.ui.form.on("Expense Claim Detail", {
             }
         }
     },
-     form_render: function(frm, cdt, cdn) {
-        $(cur_frm.fields_dict["expenses"].grid.wrapper)
-            .find('.control-value a')
-            .off("click")
-            .on("click", function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                let $el = $(this);
-                let doctype = $el.attr("data-doctype");
-                let name = $el.text().trim();
-                if (doctype && name) {
-                    let url = frappe.utils.get_form_link(doctype, name);
-                    window.open(url, "_blank");
-                }
-            });
-    },
+    
 
     expenses_add:function(frm, cdn, cdt){
         const row = locals[cdn][cdt];
@@ -336,9 +304,17 @@ async function change_employee_to_on_on_behalf(frm){
 async function add_assigend_to(frm){
     const response = await frappe.call({
         method:"advance.overrides.expense_claim.expense_claim.share_with_and_assign_to",
-        args:{workflow_state:frm.doc.workflow_state, name:frm.doc.name, project_manager:project_manager, on_behalf:on_behalf},
+        args:{name:frm.doc.name},
+        freeze:true,
+        freeze_message :__("add assigend to..."),
         callback:function(response){
-            frm.reload_doc();
+            if(response.message.status === 201){
+                frappe.show_alert({
+                    message: __("Assigend to has been added successfully"),
+                    indicator: "green"
+                });
+                frm.reload_doc();
+            }
         }
     })
 
@@ -362,7 +338,7 @@ async function create_new_advance(frm, petty_cahs_amount_data){
 async function update_food(frm) {
     await frappe.call({
         method:"advance.overrides.expense_claim.expense_claim.update_food",
-        args:{expenses:frm.doc.expenses, name:frm.doc.name},
+        args:{name:frm.doc.name},
         freeze:true,
         freeze_message :__("Updateing Food Please waite..."),
          callback: function(r) {
@@ -579,23 +555,28 @@ async function fetch_food_expenses(frm){
 }
 async function get_all_advances(frm){
     let name_of_advance = [];
-    const response = await frappe.call({
-        method:"advance.overrides.expense_claim.expense_claim.get_advances_without_project",
-        args:{employee:frm.doc.employee}
-    })
-    
     frm.clear_table("advances");
     frm.refresh_field("advances")
-    if(response.message.status === 200){
-        response.message.data.forEach(item => name_of_advance.push(item.name))
-        if(name_of_advance.length > 0){
-            name_of_advance.map((item) => {
-                let row = frm.add_child("advances");
-                frappe.model.set_value(row.doctype, row.name, "employee_advance", item);
-            })
-            frm.refresh_field("advances")
-        }
-    }
+    
+    
+    
+    // has been disabled untill we finsh implemnt the advance
+    
+    // const response = await frappe.call({
+    //     method:"advance.overrides.expense_claim.expense_claim.get_advances_without_project",
+    //     args:{employee:frm.doc.employee}
+    // })
+    
+    // if(response.message.status === 200){
+    //     response.message.data.forEach(item => name_of_advance.push(item.name))
+    //     if(name_of_advance.length > 0){
+    //         name_of_advance.map((item) => {
+    //             let row = frm.add_child("advances");
+    //             frappe.model.set_value(row.doctype, row.name, "employee_advance", item);
+    //         })
+    //         frm.refresh_field("advances")
+    //     }
+    // }
 }
 
 
