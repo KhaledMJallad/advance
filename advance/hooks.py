@@ -59,6 +59,7 @@ doctype_js = {
 
 	"Employee Advance" : "public/js/employee_advance.js",
 	"Expense Claim" : "public/js/expense_claim.js",
+	# "Expense Claim" : "public/js/make_attach_public_by_default.js",
 	"Project" :"public/js/Project.js",
 	"Payment Entry":"public/js/payment_entry.js"
 

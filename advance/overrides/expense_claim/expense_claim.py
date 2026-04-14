@@ -9,7 +9,8 @@ class CustomExpenseClaim(ExpenseClaim):
         
         fetch_cost_center_and_pyable_account(self) 
         image_show(self)
-        update_expense_claim_advances(self)
+        # has been turnd off untill we work on the advance module
+        # update_expense_claim_advances(self)
         if self.custom_espense_type != "Expense Claim":
             update_petty_cash(self)
 
@@ -38,29 +39,29 @@ def image_show(self):
                 if not is_old_file_exist:
                     old_file.is_private = 0
                     old_file.save(ignore_permissions=True)
-                    new_file = frappe.get_doc({
-                        "doctype": "File",
-                        "file_url": old_file.file_url,
-                        "file_name": old_file.file_name,
-                        "attached_to_doctype": "Expense Claim",
-                        "attached_to_name": self.name,
-                        "is_private": 0
-                    })
-                    new_file.save(ignore_permissions=True)
+                    # new_file = frappe.get_doc({
+                    #     "doctype": "File",
+                    #     "file_url": old_file.file_url,
+                    #     "file_name": old_file.file_name,
+                    #     "attached_to_doctype": "Expense Claim",
+                    #     "attached_to_name": self.name,
+                    #     "is_private": 0
+                    # })
+                    # new_file.save(ignore_permissions=True)
                     
 
                     row.invoice_image = old_file.file_url
                 else:
                     public_old_file = frappe.get_doc("File", is_old_file_exist)
-                    new_file = frappe.get_doc({
-                        "doctype": "File",
-                        "file_url": public_old_file.file_url,
-                        "file_name": public_old_file.file_name,
-                        "attached_to_doctype": "Expense Claim",
-                        "attached_to_name": self.name,
-                        "is_private": 0
-                    })
-                    new_file.save(ignore_permissions=True)
+                    # new_file = frappe.get_doc({
+                    #     "doctype": "File",
+                    #     "file_url": public_old_file.file_url,
+                    #     "file_name": public_old_file.file_name,
+                    #     "attached_to_doctype": "Expense Claim",
+                    #     "attached_to_name": self.name,
+                    #     "is_private": 0
+                    # })
+                    # new_file.save(ignore_permissions=True)
                     
 
                     row.invoice_image = public_old_file.file_url
@@ -271,257 +272,115 @@ def add_assigened_to(name):
     frappe.share.add("Expense Claim", name, user_id, read=1, write=1, share=1)
 
 
-#########################################################################
-# @frappe.whitelist()
-# def share_with_and_assign_to(workflow_state, project_manager, name):
-#     response = frappe.db.sql('''
-#         SELECT DISTINCT u.email, wft.allowed
-#         FROM `tabWorkflow` AS wf
-#         LEFT JOIN `tabWorkflow Transition` AS wft
-#             ON wf.name = wft.parent
-#         LEFT JOIN `tabHas Role` AS hr
-#             ON wft.allowed = hr.role
-#         LEFT JOIN `tabUser` AS u
-#             ON u.name = hr.parent
-#         WHERE wft.state = %s
-#           AND wf.document_type = 'Expense Claim'
-#           AND u.enabled = 1
-#     ''', (workflow_state,), as_dict=True)
-
-#     if not response:
-#         return {'status': 404, 'message': 'No employee found for this workflow state'}
-
-#     clear_email = []
-
-#     for row in response:
-#         if not row['email'] or row['email'] in ['admin@example.com', 'Administrator']:
-#             continue
-
-#         if row['allowed'] == 'Projects Manager':
-#             project_mgr_user = frappe.db.sql('''
-#                 SELECT user_id 
-#                 FROM `tabEmployee`
-#                 WHERE name = %s AND status = 'Active'
-#             ''', (project_manager,), as_dict=True)
-
-#             if project_mgr_user and project_mgr_user[0].get('user_id'):
-#                 user_id = project_mgr_user[0]['user_id']
-#                 if user_id not in ['admin@example.com', 'Administrator']:
-#                     clear_email.append(user_id)
-#         else:
-#             clear_email.append(row['email'])
-
-#     # ---- ToDo + Share ----
-#     status = ['Open', 'Pending']
-#     created, skipped = [], []
-
-#     for user_email in clear_email:
-#         exists = frappe.db.exists(
-#             "ToDo",
-#             {
-#                 "reference_type": "Expense Claim",
-#                 "reference_name": name,
-#                 "allocated_to": user_email,
-#                 "status": ("in", status)
-#             }
-#         )
-
-#         if exists:
-#             skipped.append(user_email)
-#             continue
-
-#         frappe.get_doc({
-#             "doctype": "ToDo",
-#             "allocated_to": user_email,
-#             "reference_type": "Expense Claim",
-#             "reference_name": name,
-#             "description": f"Please review Expense Claim {name} - State: {workflow_state}",
-#             "priority": "High",
-#             "status": "Open",
-#             "date": frappe.utils.today()
-#         }).insert(ignore_permissions=True)
-
-#         # Share with read-only access by default
-#         frappe.share.add("Expense Claim", name, user_email, read=1, write=1)
-
-#         created.append(user_email)
-
-#     if created:
-#         return {
-#             'status': 201,
-#             'message': f"Assignments created and shared for: {', '.join(created)}",
-#             'skipped': skipped
-#         }
-#     else:
-#         return {
-#             'status': 200,
-#             'message': "All employees already had assignments",
-#             'skipped': skipped
-#         }
-#########################################################################
-
 ######################################################################### Edit
 @frappe.whitelist()
-def share_with_and_assign_to(workflow_state, project_manager, name, on_behalf):
-    # If workflow state is "Initiator", skip everything
-    if workflow_state == 'Initiator' or workflow_state == 'Rejected' or workflow_state == "Approved":
-        return {'status': 200, 'message': 'Initiator state - no assignments needed'}
+def share_with_and_assign_to(name):
+    doc = frappe.get_doc("Expense Claim", name)
+    status = ["Open", "Pending"]
     
-    clear_email = []
-    
-    # جلب معلومات الـ Expense Claim للحصول على الموظف والمالك
-    expense_claim = frappe.get_doc("Expense Claim", name)
-
-    # Handle specific workflow states without role searching
-    if workflow_state == 'Project Manager':
-        # Use the project_manager parameter
-        if project_manager:
-            project_mgr_user = frappe.db.sql('''
-                SELECT user_id 
-                FROM `tabEmployee`
-                WHERE name = %s AND status = 'Active'
-            ''', (project_manager,), as_dict=True)
-
-            if project_mgr_user and project_mgr_user[0].get('user_id'):
-                user_id = project_mgr_user[0]['user_id']
-                if user_id not in ['admin@example.com', 'Administrator']:
-                    clear_email.append(user_id)
-        else:
-            return {'status': 400, 'message': 'Project manager parameter is required for Project Manager workflow state'}
-    
-    elif workflow_state == 'On Behalf':
-        # Use the on_behalf parameter
-        if on_behalf:
-            on_behalf_user = frappe.db.sql('''
-                SELECT user_id 
-                FROM `tabEmployee`
-                WHERE name = %s AND status = 'Active'
-            ''', (on_behalf,), as_dict=True)
-
-            if on_behalf_user and on_behalf_user[0].get('user_id'):
-                user_id = on_behalf_user[0]['user_id']
-                if user_id not in ['admin@example.com', 'Administrator']:
-                    clear_email.append(user_id)
-        else:
-            return {'status': 400, 'message': 'On behalf parameter is required for On Behalf workflow state'}
-    
-    else:
-        # For other workflow states, do normal role searching
-        response = frappe.db.sql('''
-            SELECT DISTINCT u.email, wft.allowed
-            FROM `tabWorkflow` AS wf
-            LEFT JOIN `tabWorkflow Transition` AS wft
-                ON wf.name = wft.parent
-            LEFT JOIN `tabHas Role` AS hr
-                ON wft.allowed = hr.role
-            LEFT JOIN `tabUser` AS u
-                ON u.name = hr.parent
-            WHERE wft.state = %s
-              AND wf.document_type = 'Expense Claim'
-              AND u.enabled = 1
-        ''', (workflow_state,), as_dict=True)
-
-        if not response:
-            return {'status': 404, 'message': 'No employee found for this workflow state'}
-
-        employee_user_id = None
-        document_owner = expense_claim.owner
-
-        # جلب user_id الخاص بالموظف المسجل في الـ Expense Claim
-        if expense_claim.employee:
-            employee_data = frappe.db.sql('''
-                SELECT user_id 
-                FROM `tabEmployee`
-                WHERE name = %s AND status = 'Active'
-            ''', (expense_claim.employee,), as_dict=True)
-            
-            if employee_data and employee_data[0].get('user_id'):
-                employee_user_id = employee_data[0]['user_id']
-
-        for row in response:
-            if not row['email'] or row['email'] in ['admin@example.com', 'Administrator']:
-                continue
-                
-            if row['allowed'] == 'Employee':
-                # إضافة الموظف نفسه فقط (إذا كان موجود ومفعل)
-                if employee_user_id and employee_user_id not in ['admin@example.com', 'Administrator']:
-                    clear_email.append(employee_user_id)
-                
-                # إضافة مالك المستند
-                if document_owner and document_owner not in ['admin@example.com', 'Administrator']:
-                    clear_email.append(document_owner)
-            
-            elif row['allowed'] == 'Projects Manager':
-                if project_manager:
-                    project_mgr_user = frappe.db.sql('''
-                        SELECT user_id 
-                        FROM `tabEmployee`
-                        WHERE name = %s AND status = 'Active'
-                    ''', (project_manager,), as_dict=True)
-
-                    if project_mgr_user and project_mgr_user[0].get('user_id'):
-                        user_id = project_mgr_user[0]['user_id']
-                        if user_id not in ['admin@example.com', 'Administrator']:
-                            clear_email.append(user_id)
-            else:
-                # للأدوار الأخرى، إضافة جميع المستخدمين كما هو معتاد
-                clear_email.append(row['email'])
-
-    # إزالة التكرارات
-    clear_email = list(set(clear_email))
-    
-    # Check if we have any emails to process
-    if not clear_email:
-        return {'status': 404, 'message': 'No valid users found for assignment'}
-
-    # ---- ToDo + Share ----
-    status = ['Open', 'Pending']
-    created, skipped = [], []
-
-    for user_email in clear_email:
+    if doc.workflow_state == "On Behalf":
+        user_id = frappe.db.get_value("Employee", doc.employee, "user_id")
         exists = frappe.db.exists(
-            "ToDo",
-            {
-                "reference_type": "Expense Claim",
-                "reference_name": name,
-                "allocated_to": user_email,
-                "status": ("in", status)
-            }
-        )
+                "ToDo",
+                {
+                    "reference_type": "Expense Claim",
+                    "reference_name": name,
+                    "allocated_to": user_id,
+                    "status": ("in", status),
+                },
+            )
 
-        if exists:
-            skipped.append(user_email)
-            continue
+        if not exists:
+            todo = frappe.get_doc(
+                    {
+                        "doctype": "ToDo",
+                        "allocated_to": user_id,
+                        "reference_type": "Expense Claim",
+                        "reference_name": name,
+                        "description": f"Please approve Expense claim name {name}",
+                        "priority": "High",
+                        "status": "Open",
+                        "date": frappe.utils.today(),
+                    }
+                )
+            todo.insert(ignore_permissions=True)
+        frappe.share.add("Expense Claim", name, user_id, read=1, write=1, share=1)
+    elif doc.workflow_state == "Project Manager":
+        get_project_manager = frappe.db.get_value("Project", doc.project, "project_manager")
+        user_id = frappe.db.get_value("Employee", get_project_manager, "user_id")
+        exists = frappe.db.exists(
+                "ToDo",
+                {
+                    "reference_type": "Expense Claim",
+                    "reference_name": name,
+                    "allocated_to": user_id,
+                    "status": ("in", status),
+                },
+            )
 
-        frappe.get_doc({
-            "doctype": "ToDo",
-            "allocated_to": user_email,
-            "reference_type": "Expense Claim",
-            "reference_name": name,
-            "description": f"Please review Expense Claim {name} - State: {workflow_state}",
-            "priority": "High",
-            "status": "Open",
-            "date": frappe.utils.today()
-        }).insert(ignore_permissions=True)
+        if not exists:
+            todo = frappe.get_doc(
+                    {
+                        "doctype": "ToDo",
+                        "allocated_to": user_id,
+                        "reference_type": "Expense Claim",
+                        "reference_name": name,
+                        "description": f"Please approve Expense claim name {name}",
+                        "priority": "High",
+                        "status": "Open",
+                        "date": frappe.utils.today(),
+                    }
+            )
+            todo.insert(ignore_permissions=True)
+        frappe.share.add("Expense Claim", name, user_id, read=1, write=1, share=1)
+    elif doc.workflow_state == "Accountant":
+        users = frappe.db.sql(
+                """
+                SELECT DISTINCT hr.parent AS user_id
+                FROM `tabHas Role` hr
+                JOIN `tabUser` u ON u.name = hr.parent
+                WHERE hr.role = %s
+                AND hr.parenttype = 'User'
+                AND u.enabled = 1
+                AND u.user_type = 'System User'
+                """,
+                ("Accounts User",),
+                as_dict=True,
+            )
+        for item in users:
+            if item['user_id'] != "Administrator":
+                user_id = item["user_id"]
+                # Check if ToDo already exists and is still open/pending
+                exists = frappe.db.exists(
+                    "ToDo",
+                    {
+                        "reference_type": "Expense Claim",
+                        "reference_name": name,
+                        "allocated_to": user_id,
+                        "status": ("in", status),
+                    },
+                )
 
-        # Share with read-only access by default
-        frappe.share.add("Expense Claim", name, user_email, read=1, write=1, share=1)
+                if not exists:
+                    todo = frappe.get_doc(
+                        {
+                            "doctype": "ToDo",
+                            "allocated_to": user_id,
+                            "reference_type": "Expense Claim",
+                            "reference_name": name,
+                            "description": f"Please approve Expense claim name {name}",
+                            "priority": "High",
+                            "status": "Open",
+                            "date": frappe.utils.today(),
+                        }
+                    )
+                    todo.insert(ignore_permissions=True)
+                
+                frappe.share.add("Expense Claim", name, user_id, read=1, write=1, share=1)
 
-        created.append(user_email)
-
-    if created:
-        return {
-            'status': 201,
-            'message': f"Assignments created and shared for: {', '.join(created)}",
-            'skipped': skipped
-        }
-    else:
-        return {
-            'status': 200,
-            'message': "All employees already had assignments",
-            'skipped': skipped
-        }
+    return {'status': 201, "message": "assigend to has been added successfully"}
 #########################################################################
+
 
 @frappe.whitelist()
 def change_to_lission_officer(name, liaison_officer):
@@ -581,34 +440,17 @@ def create_advance(name ,employee, petty_cash_amount, project, company, petty_ca
 
 
 @frappe.whitelist()
-def update_food(expenses, name):
-    arr = json.loads(expenses)
-    updated = 0
+def update_food(name):
+    doc = frappe.get_doc("Expense Claim", name)
+    
+    for row in doc.expenses:
+        if row.expense_food_name:
+            frappe.db.set_value("Food Expenses", row.expense_food_name, "expense_claim", name)
+            frappe.db.set_value("Food Expenses", row.expense_food_name, "workflow_state", 'paid')
+    frappe.db.commit()
 
-    for row in arr:
-        if row.get('expense_food_name'):
-            frappe.db.set_value(
-                "Food Expenses",
-                row['expense_food_name'],
-                "expense_claim",
-                name,
-                update_modified=True
-            )
-            frappe.db.set_value(
-                "Food Expenses",
-                row['expense_food_name'],
-                'workflow_state',
-                'paid',
-                update_modified=True
-            )
-            updated += 1
-
-    if updated > 0:
-        frappe.db.commit()  # optional, only if you want to force commit
-        return {'status': 201, 'message': f'Successfully updated {updated} record(s)'}
-    else:
-        return {'status': 404, 'message': 'No matching records found'}
-        
+    return {"status": 201, "message": "Food Expense has been updated successfully"}
+    
         
 @frappe.whitelist()
 def get_employee_advance(project, employee):
