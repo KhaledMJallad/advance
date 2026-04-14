@@ -8,7 +8,6 @@ class CustomExpenseClaim(ExpenseClaim):
     def validate(self):
         
         fetch_cost_center_and_pyable_account(self) 
-        image_show(self)
         # has been turnd off untill we work on the advance module
         # update_expense_claim_advances(self)
         if self.custom_espense_type != "Expense Claim":
@@ -22,49 +21,7 @@ class CustomExpenseClaim(ExpenseClaim):
 
 
 
-def image_show(self):
-    for row in self.expenses:
-        if row.invoice_image:
-            if row.invoice_image.startswith("/private/files/"):
-                file_doc_name = frappe.db.get_value("File", {"file_url": row.invoice_image}, "name")
-                
-                
 
-                old_file = frappe.get_doc("File", file_doc_name)
-                is_old_file_exist = frappe.db.exists("File",{
-                    "file_url": f"/files/{old_file.file_name}",
-                    "is_private": 0
-                })
-
-                if not is_old_file_exist:
-                    old_file.is_private = 0
-                    old_file.save(ignore_permissions=True)
-                    # new_file = frappe.get_doc({
-                    #     "doctype": "File",
-                    #     "file_url": old_file.file_url,
-                    #     "file_name": old_file.file_name,
-                    #     "attached_to_doctype": "Expense Claim",
-                    #     "attached_to_name": self.name,
-                    #     "is_private": 0
-                    # })
-                    # new_file.save(ignore_permissions=True)
-                    
-
-                    row.invoice_image = old_file.file_url
-                else:
-                    public_old_file = frappe.get_doc("File", is_old_file_exist)
-                    # new_file = frappe.get_doc({
-                    #     "doctype": "File",
-                    #     "file_url": public_old_file.file_url,
-                    #     "file_name": public_old_file.file_name,
-                    #     "attached_to_doctype": "Expense Claim",
-                    #     "attached_to_name": self.name,
-                    #     "is_private": 0
-                    # })
-                    # new_file.save(ignore_permissions=True)
-                    
-
-                    row.invoice_image = public_old_file.file_url
                 
                 
                 
@@ -145,6 +102,14 @@ def update_expense_claim_advances(self):
     self.grand_total = self.total_sanctioned_amount - total_advance 
     self.total_advance_amount = total_advance
     
+
+@frappe.whitelist()
+def get_file_name_by_url(file_url):
+    if file_url.startswith("/private/files/"):
+        file_name = frappe.db.get_value("File", {"file_url":file_url}, "name", "creation desc")
+        return {"status": 200, "data":file_name}
+    else:
+        return {"status": 203, "message":"file is already public"}
 
 
 @frappe.whitelist()

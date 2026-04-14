@@ -136,8 +136,7 @@ frappe.ui.form.on('Expense Claim', {
             await get_employee_number_on_stand_alone(frm)
             
         }
-  
-
+        
 	},
     
 })
@@ -168,7 +167,6 @@ frappe.ui.form.on("Expense Claim Detail", {
             }
         }
     },
-    
 
     expenses_add:function(frm, cdn, cdt){
         const row = locals[cdn][cdt];
@@ -179,24 +177,7 @@ frappe.ui.form.on("Expense Claim Detail", {
 
 
 
-function after_save_in_pytte_cash(frm){
-    frappe.call({
-        method:"",
-        args:{name:frm.doc.name},
-        freeze: true,
-        freeze_message: __("Please waite..."),
-        callback:function(response){
-            if(response.message.status === 201){
-                frappe.show_alert({
-                    message: __("On Behalf has been added"),
-                    indicator: "green"
-                });
-                frm.reload_doc();
-            }
-        }
 
-    })
-}
 
 function assigenn_to_on_behalf(frm){
     frappe.call({
