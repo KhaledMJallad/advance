@@ -119,17 +119,20 @@ frappe.ui.form.on('Expense Claim', {
             }
         }
 
-        if(frm.doc.custom_espense_type !== "Expense Claim"){
-            const curr_employee = await get_employee_number_on_stand_alone(frm)
-            if(!frm.is_new()){
+
+        if(!frm.is_new()){
                 await get_project_data(frm)
                 if(frm.doc.workflow_state === "Project Manager"){
                     if(curr_employee !== project_manager && !frappe.user.has_role("System Manager")){
                         frm.page.actions_btn_group.hide();
                     }
                 }
-            }
+        }
 
+        
+        if(frm.doc.custom_espense_type !== "Expense Claim"){
+            const curr_employee = await get_employee_number_on_stand_alone(frm)
+            
             if(frm.is_new() || frm.doc.workflow_state === "Initiator"){
                 if(curr_employee.message.employee_num === frm.doc.custom_liaison_officer || frappe.user.has_role("System Manager")){
                     if(frm.doc.custom_espense_type === "Replenishment" || frm.doc.custom_espense_type === "Petty-cash Project End"){
