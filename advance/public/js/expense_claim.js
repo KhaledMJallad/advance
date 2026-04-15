@@ -26,6 +26,9 @@ frappe.ui.form.on('Expense Claim', {
             }
         }
     },
+    after_save:function(frm){
+        update_expense_calim(frm)
+    },
     project:async function(frm){
         // always get the project data
         if(frm.doc.project){
@@ -98,17 +101,41 @@ frappe.ui.form.on('Expense Claim', {
 
     },
 	refresh:async function(frm) {
-        if(frm.doc.custom_espense_type !== "Expense Claim"){
-            const curr_employee = await get_employee_number_on_stand_alone(frm)
-            if(!frm.is_new()){
+        // if(frm.doc.workflow_state === "Rejected"){
+        //     if(frm.doc.custom_rejected_reason){
+        //         const dialog = new frappe.ui.Dialog({
+        //                     title: __('Notice'),
+        //                     fields: [
+        //                         {
+        //                             fieldtype: 'HTML',
+        //                             fieldname: 'message',
+        //                             options: `<div style="padding:1rem; font-size:1rem;">
+        //                                         ${frm.doc.custom_rejected_reason}
+        //                                     </div>`
+        //                         }
+        //                     ],
+        //                     primary_action_label: null,
+        //                     secondary_action: null
+        //                 });
+
+        //                 dialog.show();
+        //     }
+        // }
+
+
+        if(!frm.is_new()){
                 await get_project_data(frm)
                 if(frm.doc.workflow_state === "Project Manager"){
                     if(curr_employee !== project_manager && !frappe.user.has_role("System Manager")){
                         frm.page.actions_btn_group.hide();
                     }
                 }
-            }
+        }
 
+        
+        if(frm.doc.custom_espense_type !== "Expense Claim"){
+            const curr_employee = await get_employee_number_on_stand_alone(frm)
+            
             if(frm.is_new() || frm.doc.workflow_state === "Initiator"){
                 if(curr_employee.message.employee_num === frm.doc.custom_liaison_officer || frappe.user.has_role("System Manager")){
                     if(frm.doc.custom_espense_type === "Replenishment" || frm.doc.custom_espense_type === "Petty-cash Project End"){
@@ -146,7 +173,7 @@ frappe.ui.form.on("Expense Claim Detail", {
         frm.doc.__unsaved = false;
         
     },
-      invoice_no: function(frm, cdt, cdn) {
+    invoice_no: function(frm, cdt, cdn) {
         const row = locals[cdt][cdn];
         const expenses = frm.doc.expenses || [];
         if(!row.invoice_no) return;
@@ -167,7 +194,6 @@ frappe.ui.form.on("Expense Claim Detail", {
             }
         }
     },
-
     expenses_add:function(frm, cdn, cdt){
         const row = locals[cdn][cdt];
         row.project = frm.doc.project
@@ -178,6 +204,25 @@ frappe.ui.form.on("Expense Claim Detail", {
 
 
 
+
+function update_expense_calim(frm){
+    frappe.call({
+        method:"advance.overrides.expense_claim.expense_claim.update_expense_claim",
+        args:{name:frm.doc.name},
+        reeze:true,
+        freeze_message :__("Updateing Expesne Claim Please waite..."),
+        callback:function(response){
+            if(response.message.status === 201){
+                frappe.show_alert({
+                    message: __("Expense Claim has been updated successfully"),
+                    indicator: "green"
+                });
+                frm.reload_doc();
+            }
+        }
+    })
+
+}
 
 function assigenn_to_on_behalf(frm){
     frappe.call({
@@ -561,28 +606,7 @@ async function get_all_advances(frm){
 }
 
 
-function show_rejected_reson(frm){
-    if (repeted === 1) return;
-    const dialog = new frappe.ui.Dialog({
-            title: __('Notice'),
-            fields: [
-                {
-                    fieldtype: 'HTML',
-                    fieldname: 'message',
-                    options: `<div style="padding:1rem; font-size:1rem;">
-                                ${frm.doc.custom_rejected_reason}
-                            </div>`
-                }
-            ],
-            primary_action_label: null,
-            secondary_action: null
-        });
 
-        dialog.show();
-
-        repeted = 1;
-            
-}
 
 
 function get_employee_company(frm){

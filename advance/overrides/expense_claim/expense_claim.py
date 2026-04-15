@@ -5,13 +5,13 @@ from frappe.utils.file_manager import get_file, save_file
 from hrms.hr.doctype.expense_claim.expense_claim import ExpenseClaim
 import json
 class CustomExpenseClaim(ExpenseClaim):
-    def validate(self):
-        
-        fetch_cost_center_and_pyable_account(self) 
-        # has been turnd off untill we work on the advance module
-        # update_expense_claim_advances(self)
-        if self.custom_espense_type != "Expense Claim":
-            update_petty_cash(self)
+    pass
+    # def validate(self):
+    #     fetch_cost_center_and_pyable_account(self) 
+    #     # has been turnd off untill we work on the advance module
+    #     # update_expense_claim_advances(self)
+    #     if self.custom_espense_type != "Expense Claim":
+    #         update_petty_cash(self)
 
 
 
@@ -24,25 +24,33 @@ class CustomExpenseClaim(ExpenseClaim):
 
                 
                 
-                
-              
+@frappe.whitelist()          
+def update_expense_claim(name):              
+    doc = frappe.get_doc("Expense Claim", name)
+    fetch_cost_center_and_pyable_account(doc)
+    # has been turnd off untill we work on the advance module
+    # update_expense_claim_advances(self)
+    if doc.custom_espense_type != "Expense Claim":
+        update_petty_cash(doc)
+    
+    doc.save()
 
-
+    return {'status':201, "message":"Expense claim has been updated successfully"}
   
 
 
 
 
-def update_petty_cash(self):
-    if self.custom_pettycash:
-        frappe.db.set_value("Petty-cash", self.custom_pettycash, "custom_expense_claim", self.name, update_modified=True)
+def update_petty_cash(doc):
+    if doc.custom_pettycash:
+        frappe.db.set_value("Petty-cash", doc.custom_pettycash, "custom_expense_claim", doc.name, update_modified=True)
         frappe.db.commit()
 
-def fetch_cost_center_and_pyable_account(self):
-    if not self.project:
+def fetch_cost_center_and_pyable_account(doc):
+    if not doc.project:
         frappe.throw("please insert a project before save")
 
-    cost_center = frappe.db.get_value('Project', self.project, 'cost_center')
+    cost_center = frappe.db.get_value('Project', doc.project, 'cost_center')
 
 
     last_index = cost_center.rfind('-')
@@ -50,66 +58,66 @@ def fetch_cost_center_and_pyable_account(self):
     if last_index != -1:
         cost_center = cost_center[:last_index].strip()
 
-    if  self.company == 'iValueJOR':
+    if  doc.company == 'iValueJOR':
         cost_center += ' - iJOR'
-    elif self.company == 'iValueUAE':
+    elif doc.company == 'iValueUAE':
          cost_center += ' - iUAE'
-    elif self.company =='iValue KSA':
+    elif doc.company =='iValue KSA':
         cost_center += ' - iKSA'
     else:
         cost_center += ' - iV'
 
     
 
-    for row in self.expenses:
+    for row in doc.expenses:
         row.cost_center = cost_center
-        row.project = self.project
+        row.project = doc.project
     
-    self.cost_center = cost_center
+    doc.cost_center = cost_center
     
-    if self.custom_espense_type != "Expense Claim":
+    if doc.custom_espense_type != "Expense Claim":
         self.payable_account = "1620 - Petty Cash - iKSA"
     
 
+# keep it for later
+# def update_expense_claim_advances(self):
+#     if not self.advances or len(self.advances) == 0:
+#         return {"status": 203, "message": "No advances found"}
 
-def update_expense_claim_advances(self):
-    if not self.advances or len(self.advances) == 0:
-        return {"status": 203, "message": "No advances found"}
+#     # choose the total you want to distribute
+#     grand_total = flt(self.total_sanctioned_amount or 0)
 
-    # choose the total you want to distribute
-    grand_total = flt(self.total_sanctioned_amount or 0)
+#     if grand_total <= 0:
+#         return {"status": 203, "message": "Grand total / sanctioned amount is zero"}
 
-    if grand_total <= 0:
-        return {"status": 203, "message": "Grand total / sanctioned amount is zero"}
+#     remaining_amount = grand_total
 
-    remaining_amount = grand_total
+#     for item in self.advances:
+#         unclaimed_amount = flt(item.unclaimed_amount or 0)
 
-    for item in self.advances:
-        unclaimed_amount = flt(item.unclaimed_amount or 0)
+#         if remaining_amount <= 0:
+#             item.allocated_amount = 0
+#             continue
 
-        if remaining_amount <= 0:
-            item.allocated_amount = 0
-            continue
+#         if unclaimed_amount >= remaining_amount:
+#             item.allocated_amount = remaining_amount
+#             remaining_amount = 0
+#         else:
+#             item.allocated_amount = unclaimed_amount
+#             remaining_amount -= unclaimed_amount
 
-        if unclaimed_amount >= remaining_amount:
-            item.allocated_amount = remaining_amount
-            remaining_amount = 0
-        else:
-            item.allocated_amount = unclaimed_amount
-            remaining_amount -= unclaimed_amount
-
-    total_advance = sum(d.allocated_amount or 0 for d in self.advances)
-    self.grand_total = self.total_sanctioned_amount - total_advance 
-    self.total_advance_amount = total_advance
+#     total_advance = sum(d.allocated_amount or 0 for d in self.advances)
+#     self.grand_total = self.total_sanctioned_amount - total_advance 
+#     self.total_advance_amount = total_advance
     
 
-@frappe.whitelist()
-def get_file_name_by_url(file_url):
-    if file_url.startswith("/private/files/"):
-        file_name = frappe.db.get_value("File", {"file_url":file_url}, "name", "creation desc")
-        return {"status": 200, "data":file_name}
-    else:
-        return {"status": 203, "message":"file is already public"}
+# @frappe.whitelist()
+# def get_file_name_by_url(file_url):
+#     if file_url.startswith("/private/files/"):
+#         file_name = frappe.db.get_value("File", {"file_url":file_url}, "name", "creation desc")
+#         return {"status": 200, "data":file_name}
+#     else:
+#         return {"status": 203, "message":"file is already public"}
 
 
 @frappe.whitelist()
@@ -189,11 +197,11 @@ def skip_on_behalf(name):
         
 
 
-@frappe.whitelist()
-def force_to_save(name):
-    doc =  frappe.get_doc('Expense Claim', name)
-    doc.insert(ignore_permissions=True)
-    return {"status": 201, 'message': "data has been saved successfuly"}
+# @frappe.whitelist()
+# def force_to_save(name):
+#     doc =  frappe.get_doc('Expense Claim', name)
+#     doc.insert(ignore_permissions=True)
+#     return {"status": 201, 'message': "data has been saved successfuly"}
 
 
 
