@@ -98,6 +98,27 @@ frappe.ui.form.on('Expense Claim', {
 
     },
 	refresh:async function(frm) {
+        if(frm.doc.workflow_state === "Rejected"){
+            if(frm.doc.custom_rejected_reason){
+                const dialog = new frappe.ui.Dialog({
+                            title: __('Notice'),
+                            fields: [
+                                {
+                                    fieldtype: 'HTML',
+                                    fieldname: 'message',
+                                    options: `<div style="padding:1rem; font-size:1rem;">
+                                                ${frm.doc.custom_rejected_reason}
+                                            </div>`
+                                }
+                            ],
+                            primary_action_label: null,
+                            secondary_action: null
+                        });
+
+                        dialog.show();
+            }
+        }
+
         if(frm.doc.custom_espense_type !== "Expense Claim"){
             const curr_employee = await get_employee_number_on_stand_alone(frm)
             if(!frm.is_new()){
@@ -561,28 +582,7 @@ async function get_all_advances(frm){
 }
 
 
-function show_rejected_reson(frm){
-    if (repeted === 1) return;
-    const dialog = new frappe.ui.Dialog({
-            title: __('Notice'),
-            fields: [
-                {
-                    fieldtype: 'HTML',
-                    fieldname: 'message',
-                    options: `<div style="padding:1rem; font-size:1rem;">
-                                ${frm.doc.custom_rejected_reason}
-                            </div>`
-                }
-            ],
-            primary_action_label: null,
-            secondary_action: null
-        });
 
-        dialog.show();
-
-        repeted = 1;
-            
-}
 
 
 function get_employee_company(frm){
