@@ -149,7 +149,7 @@ before_uninstall = "advance.uninstall.before_uninstall"
 # ---------------
 # Override standard doctype classes
 
-override_doctype_class = {"Expense Claim": "advance.overrides.expense_claim.expense_claim.CustomExpenseClaim"}
+# override_doctype_class = {"Expense Claim": "advance.overrides.expense_claim.expense_claim.CustomExpenseClaim"}
 
 # Document Events
 # ---------------
