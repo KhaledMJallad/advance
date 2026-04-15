@@ -59,7 +59,7 @@ def fetch_cost_center_and_pyable_account(doc):
         cost_center = cost_center[:last_index].strip()
 
     if  doc.company == 'iValueJOR':
-        cost_center += ' - iiValueJOR'
+        cost_center += ' - iJOR'
     elif doc.company == 'iValueUAE':
          cost_center += ' - iUAE'
     elif doc.company =='iValue KSA':
@@ -76,8 +76,7 @@ def fetch_cost_center_and_pyable_account(doc):
     doc.cost_center = cost_center
     
     if doc.custom_espense_type != "Expense Claim":
-        pass
-        # self.payable_account = "1620 - Petty Cash - iKSA"
+        self.payable_account = "1620 - Petty Cash - iKSA"
     
 
 # keep it for later
