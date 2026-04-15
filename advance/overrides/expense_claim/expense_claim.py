@@ -76,7 +76,7 @@ def fetch_cost_center_and_pyable_account(doc):
     doc.cost_center = cost_center
     
     if doc.custom_espense_type != "Expense Claim":
-        self.payable_account = "1620 - Petty Cash - iKSA"
+        doc.payable_account = "1620 - Petty Cash - iKSA"
     
 
 # keep it for later
