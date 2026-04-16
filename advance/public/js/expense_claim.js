@@ -102,28 +102,8 @@ frappe.ui.form.on('Expense Claim', {
     },
 	refresh:async function(frm) {
         const curr_employee = await get_employee_number_on_stand_alone(frm)
-        // if(frm.doc.workflow_state === "Rejected"){
-        //     if(frm.doc.custom_rejected_reason){
-        //         const dialog = new frappe.ui.Dialog({
-        //                     title: __('Notice'),
-        //                     fields: [
-        //                         {
-        //                             fieldtype: 'HTML',
-        //                             fieldname: 'message',
-        //                             options: `<div style="padding:1rem; font-size:1rem;">
-        //                                         ${frm.doc.custom_rejected_reason}
-        //                                     </div>`
-        //                         }
-        //                     ],
-        //                     primary_action_label: null,
-        //                     secondary_action: null
-        //                 });
-
-        //                 dialog.show();
-        //     }
-        // }
-
-
+        
+        // project manager validation
         if(!frm.is_new()){
                 await get_project_data(frm)
                 if(frm.doc.workflow_state === "Project Manager"){
@@ -134,8 +114,10 @@ frappe.ui.form.on('Expense Claim', {
         }
 
         
+
+
+
         if(frm.doc.custom_espense_type !== "Expense Claim"){
-            
             
             if(frm.is_new() || frm.doc.workflow_state === "Initiator"){
                 if(curr_employee.message.employee_num === frm.doc.custom_liaison_officer || frappe.user.has_role("System Manager")){
@@ -160,11 +142,48 @@ frappe.ui.form.on('Expense Claim', {
                 }
 
             }
+        
         }else{
-            await get_employee_number_on_stand_alone(frm)
             
+            await get_employee_number_on_stand_alone(frm)
+            if(frm.doc.workflow_state === "Initiator"){
+                if(curr_employee.message.employee_num !== frm.doc.employee && !frappe.user.has_role("System Manager")){
+                    frm.page.actions_btn_group.hide();
+                }
+            }
         }
 
+        
+        
+        
+        
+        
+        
+        
+        // think of it later
+        // if(frm.doc.workflow_state === "Rejected"){
+        //     if(frm.doc.custom_rejected_reason){
+        //         const dialog = new frappe.ui.Dialog({
+        //                     title: __('Notice'),
+        //                     fields: [
+        //                         {
+        //                             fieldtype: 'HTML',
+        //                             fieldname: 'message',
+        //                             options: `<div style="padding:1rem; font-size:1rem;">
+        //                                         ${frm.doc.custom_rejected_reason}
+        //                                     </div>`
+        //                         }
+        //                     ],
+        //                     primary_action_label: null,
+        //                     secondary_action: null
+        //                 });
+
+        //                 dialog.show();
+        //     }
+        // }
+
+
+       
 	},
     
 })

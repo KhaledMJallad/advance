@@ -59,7 +59,7 @@ def fetch_cost_center_and_pyable_account(doc):
         cost_center = cost_center[:last_index].strip()
 
     if  doc.company == 'iValueJOR':
-        cost_center += ' - iJOR'
+        cost_center += ' - iiValueJOR'
     elif doc.company == 'iValueUAE':
          cost_center += ' - iUAE'
     elif doc.company =='iValue KSA':
