@@ -102,10 +102,9 @@ frappe.ui.form.on('Expense Claim', {
     },
 	refresh:async function(frm) {
         const curr_employee = await get_employee_number_on_stand_alone(frm)
-        
         // project manager validation
         if(!frm.is_new()){
-                await get_project_data(frm)
+            await get_project_data(frm)
                 if(frm.doc.workflow_state === "Project Manager"){
                     if(curr_employee.message.employee_num !== project_manager && !frappe.user.has_role("System Manager")){
                         frm.page.actions_btn_group.hide();

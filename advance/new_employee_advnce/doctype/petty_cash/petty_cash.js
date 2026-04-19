@@ -22,7 +22,7 @@ frappe.ui.form.on("Petty-cash", {
                     "custom_espense_type":frm.doc.petty_cash_type,
                     "company":frm.doc.custom_company,
                     'employee': frm.doc.custom_on_behalf,
-                    "custom_liaison_officer": frm.doc.custom_liaison_officer
+                    "custom_liaison_officer": frm.doc.liaison_officer
                 };
                 frappe.new_doc('Expense Claim')
             break;
