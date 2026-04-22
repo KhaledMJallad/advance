@@ -444,7 +444,7 @@
   "doctype": "Workflow",
   "document_type": "Food Expenses",
   "is_active": 1,
-  "modified": "2026-04-07 14:04:27.403725",
+  "modified": "2026-04-20 12:53:39.724602",
   "name": "Expense Food",
   "override_status": 0,
   "send_email_alert": 0,
@@ -498,7 +498,7 @@
     "workflow_builder_id": "3"
    },
    {
-    "allow_edit": "System Manager",
+    "allow_edit": "Accounts User",
     "avoid_status_override": 0,
     "doc_status": "0",
     "is_optional_state": 0,
