@@ -45,7 +45,7 @@ async function update_status(advance_id){
             }, 5);
             frm.reload_doc();
             }else{
-                frappe.throw('An error has occurred. Please contact your administrator to resolve this issue.')
+                // frappe.throw('An error has occurred. Please contact your administrator to resolve this issue.')
             }
         }
     })

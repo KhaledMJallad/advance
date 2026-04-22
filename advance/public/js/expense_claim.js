@@ -9,20 +9,28 @@ frappe.ui.form.on('Expense Claim', {
         // check on the if photo exist
         if(frm.doc.custom_espense_type === "Expense Claim"){
             const empty_attach = []
+            const empty_invoice_number = []
             let empty_recods_text = ""
+            let empty_nvoice_number_text = ""
             frm.doc.expenses.find((item) => {
                 if(!item.invoice_image){
                     empty_attach.push(item.idx)
                 }
+                if(!item.invoice_no){
+                    empty_invoice_number.push(item.idx)
+                }
             })
     
-            if(empty_attach.length > 0){
+            if(empty_attach.length > 0 || empty_invoice_number.length > 0){
                 empty_attach.forEach((item) => {
                     empty_recods_text+= item + ", "
     
                 })
-    
-                frappe.throw(`please add attach to records ${empty_recods_text} in expenses table to continue the process`)
+                empty_invoice_number.forEach((item) => {
+                    empty_nvoice_number_text += item + ", "
+                })
+                
+                frappe.throw(`${empty_attach.length > 0 ? `attachemnt missing from record ${empty_recods_text}` : ""} ${empty_invoice_number.length > 0 && empty_attach.length > 0 ? " and " : ""} ${empty_invoice_number.length > 0 ? `invoice  number missing from record ${empty_nvoice_number_text}` : ""} in expense table`)
             }
         }
     },
@@ -33,6 +41,21 @@ frappe.ui.form.on('Expense Claim', {
         // always get the project data
         if(frm.doc.project){
             get_project_data(frm);
+        }
+
+        if(frm.doc.custom_espense_type === "Expense Claim"){
+            if(frm.doc.project){
+               await get_project_based_on_expense_type(frm)
+            }else{
+                frm.set_query('expense_type', 'expenses', function(doc, cdt, cdn) {
+                    return {
+                        filters: [
+                            ['Expense Claim Type', 'project', 'is', "not set" ]
+                        ]
+                    };
+                });
+
+            }
         }
     },
     after_workflow_action:async function(frm){
@@ -143,13 +166,25 @@ frappe.ui.form.on('Expense Claim', {
             }
         
         }else{
-            
+            if(frm.doc.project){
+                await get_project_based_on_expense_type(frm)
+            }else{
+                  frm.set_query('expense_type', 'expenses', function(doc, cdt, cdn) {
+                    return {
+                        filters: [
+                            ['Expense Claim Type', 'custom_project', 'is', "not set" ]
+                        ]
+                    };
+                });
+            }
             await get_employee_number_on_stand_alone(frm)
             if(frm.doc.workflow_state === "Initiator"){
                 if(curr_employee.message.employee_num !== frm.doc.employee && !frappe.user.has_role("System Manager")){
                     frm.page.actions_btn_group.hide();
                 }
             }
+
+
         }
 
         
@@ -217,11 +252,47 @@ frappe.ui.form.on("Expense Claim Detail", {
         const row = locals[cdn][cdt];
         row.project = frm.doc.project
         frm.refresh_field('expenses')
+    },
+    expense_type:async function(frm, cdn, cdt){
+        if(frm.doc.custom_espense_type === "Expense Claim"){
+            const row = locals[cdn][cdt]
+            if(!frm.doc.project){
+                row.expense_type = ""
+                frappe.throw("Please select a project before selecting expense claim type")
+
+            }
+        }
     }
 });
 
 
 
+async function get_project_based_on_expense_type(frm){
+    frappe.call({
+        method:"advance.overrides.expense_claim.expense_claim.get_project_based_on_expense_type",
+        args:{project:frm.doc.project},
+        callback:function(response){
+            if(response.message.status === 200){
+                frm.set_query('expense_type', 'expenses', function(doc, cdt, cdn) {
+                    return {
+                        filters: [
+                            ['Expense Claim Type', 'name', 'in', response.message.data]
+                        ]
+                    };
+                });
+            }else{
+            frm.set_query('expense_type', 'expenses', function(doc, cdt, cdn) {
+                    return {
+                        filters: [
+                            ['Expense Claim Type', 'custom_project', 'is', "not set" ]
+                        ]
+                    };
+                });
+            }
+        }
+    })
+
+}
 
 
 function update_expense_calim(frm){

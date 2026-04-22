@@ -22,7 +22,21 @@ class CustomExpenseClaim(ExpenseClaim):
 
 
 
-                
+
+@frappe.whitelist()
+def get_project_based_on_expense_type(project):
+    if not project:
+        return {"status": 400, "message": "expense claim type must be inserted"}
+    
+    get_expense_type_based_on_project = frappe.db.get_all("Expense Claim Type", {"custom_project": project}, "name")
+
+    if get_expense_type_based_on_project:
+        expenseType = [item.name for item in get_expense_type_based_on_project]
+        return {"status": 200, "data": expenseType}
+    else:
+        return {"status": 404, "message": "no data was found"}
+
+
                 
 @frappe.whitelist()          
 def update_expense_claim(name):              
