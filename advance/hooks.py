@@ -159,7 +159,7 @@ doc_events = {
  	"Expense Claim": {
  #		"before_insert": "advance.doc_event.before_insert",
  #		"before_save": "advance.doc_event.before_save",
- 		"validate": "advance.overrides.expense_claim.expense_claim"
+ 		"validate": "advance.overrides.expense_claim.expense_claim.validate"
  	}
 }
 

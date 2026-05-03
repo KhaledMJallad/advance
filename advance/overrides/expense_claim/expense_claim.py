@@ -15,12 +15,80 @@ class CustomExpenseClaim(ExpenseClaim):
 
 
 
+def validate(doc, methods = None):
+    if doc.custom_espense_type == "Expense Claim":
+        if doc.workflow_state == "Accountant":
+            add_tax_and_charges(doc)
+            
 
 
 
 
 
 
+
+def add_tax_and_charges(doc):
+
+    total_amount_before_tax = 0.0
+    total_sanctioned_amount = 0.0
+    grand_total = 0.0
+    total_taxes_and_charges = 0.0 
+    total_claimed_amount = 0.0
+
+    doc.set("taxes", [])
+
+    for item in doc.expenses:
+        if item.amount_before_tax:
+            total_amount_before_tax += flt(item.amount_before_tax, 3)
+        else:
+            total_amount_before_tax += item.amount
+
+    for item in doc.expenses:
+        if item.is_taxable:
+            tax_rate = frappe.db.get_value("Sales Taxes and Charges", {"parent": item.tax_and_charges}, "rate")
+            
+            if not item.amount_before_tax:
+                item.amount_before_tax = item.amount
+            
+            tax_amount = (tax_rate + 100) / 100
+            amount_after_tax = flt(item.amount_before_tax, 3) / tax_amount
+            
+            if not item.amount_after_tax:
+                item.amount_after_tax = amount_after_tax
+
+
+            if flt(item.amount_after_tax, 3) != amount_after_tax:
+                item.amount = amount_after_tax
+                item.sanctioned_amount = amount_after_tax
+            
+            
+            
+            added_tax_amount_to_expense_amount = flt(item.amount_before_tax, 3) - flt(item.amount_after_tax, 3) 
+            
+            total_taxes_and_charges += added_tax_amount_to_expense_amount
+            
+            
+            #15002 - Asset and Expense VAT 15% - iJOR
+            
+            doc.append("taxes", {
+                "account_head": "Expenses Included In Valuation - iK", #static
+                "rate":tax_rate,
+                "tax_amount": added_tax_amount_to_expense_amount,
+                "total": total_amount_before_tax + flt(added_tax_amount_to_expense_amount, 3),
+                "description":"Duties and Taxes - iK"
+            })
+        
+        if item.amount_after_tax:
+            total_claimed_amount += flt(item.amount_after_tax, 3)
+            total_sanctioned_amount += flt(amount_after_tax, 3)
+        else:
+            total_claimed_amount += item.amount
+            total_sanctioned_amount += item.sanctioned_amount
+
+    doc.total_sanctioned_amount = total_sanctioned_amount
+    doc.total_taxes_and_charges = total_taxes_and_charges
+    doc.grand_total = total_taxes_and_charges + total_claimed_amount
+    doc.total_claimed_amount = total_claimed_amount
 
 
 @frappe.whitelist()
