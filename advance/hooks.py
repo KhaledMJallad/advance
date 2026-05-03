@@ -149,19 +149,18 @@ before_uninstall = "advance.uninstall.before_uninstall"
 # ---------------
 # Override standard doctype classes
 
-# override_doctype_class = {"Expense Claim": "advance.overrides.expense_claim.expense_claim.CustomExpenseClaim"}
+override_doctype_class = {"Expense Claim": "advance.overrides.expense_claim.expense_claim.CustomExpenseClaim"}
 
 # Document Events
 # ---------------
 # Hook on document methods and events
 
-doc_events = {
- 	"Expense Claim": {
- #		"before_insert": "advance.doc_event.before_insert",
- #		"before_save": "advance.doc_event.before_save",
- 		"validate": "advance.overrides.expense_claim.expense_claim.validate"
- 	}
-}
+# doc_events = {
+#  	"Expense Claim": {
+#         "on_submit":"advance.overrides.expense_claim.expense_claim.validate",
+#  		"validate": "advance.overrides.expense_claim.expense_claim.validate"
+#  	}
+# }
 
 # Scheduled Tasks
 # ---------------

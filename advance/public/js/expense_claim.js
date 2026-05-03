@@ -34,9 +34,9 @@ frappe.ui.form.on('Expense Claim', {
             }
         }
     },
-    after_save:function(frm){
-        update_expense_calim(frm)
-    },
+    // after_save:function(frm){
+    //     update_expense_calim(frm)
+    // },
     project:async function(frm){
         // always get the project data
         if(frm.doc.project){
@@ -276,24 +276,24 @@ async function get_project_based_on_recorce_alloction(frm){
 }
 
 
-function update_expense_calim(frm){
-    frappe.call({
-        method:"advance.overrides.expense_claim.expense_claim.update_expense_claim",
-        args:{name:frm.doc.name},
-        reeze:true,
-        freeze_message :__("Updateing Expesne Claim Please waite..."),
-        callback:function(response){
-            if(response.message.status === 201){
-                frappe.show_alert({
-                    message: __("Expense Claim has been updated successfully"),
-                    indicator: "green"
-                });
-                frm.reload_doc();
-            }
-        }
-    })
+// function update_expense_calim(frm){
+//     frappe.call({
+//         method:"advance.overrides.expense_claim.expense_claim.update_expense_claim",
+//         args:{name:frm.doc.name},
+//         reeze:true,
+//         freeze_message :__("Updateing Expesne Claim Please waite..."),
+//         callback:function(response){
+//             if(response.message.status === 201){
+//                 frappe.show_alert({
+//                     message: __("Expense Claim has been updated successfully"),
+//                     indicator: "green"
+//                 });
+//                 frm.reload_doc();
+//             }
+//         }
+//     })
 
-}
+// }
 
 function assigenn_to_on_behalf(frm){
     frappe.call({

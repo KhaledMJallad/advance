@@ -5,20 +5,18 @@ from frappe.utils.file_manager import get_file, save_file
 from hrms.hr.doctype.expense_claim.expense_claim import ExpenseClaim
 import json
 class CustomExpenseClaim(ExpenseClaim):
-    pass
-    # def validate(self):
-    #     fetch_cost_center_and_pyable_account(self) 
-    #     # has been turnd off untill we work on the advance module
-    #     # update_expense_claim_advances(self)
-    #     if self.custom_espense_type != "Expense Claim":
-    #         update_petty_cash(self)
+    def validate(self):
+        super().validate()
+        update_expense_claim(self)
+
+    def before_submit(self):
+        super().before_submit()
+        update_expense_claim(self)
 
 
 
-def validate(doc, methods = None):
-    if doc.custom_espense_type == "Expense Claim":
-        if doc.workflow_state == "Accountant":
-            add_tax_and_charges(doc)
+    
+    
             
 
 
@@ -27,7 +25,7 @@ def validate(doc, methods = None):
 
 
 
-def add_tax_and_charges(doc):
+def add_tax_and_charges(self):
 
     total_amount_before_tax = 0.0
     total_sanctioned_amount = 0.0
@@ -35,15 +33,15 @@ def add_tax_and_charges(doc):
     total_taxes_and_charges = 0.0 
     total_claimed_amount = 0.0
 
-    doc.set("taxes", [])
-
-    for item in doc.expenses:
+    self.set("taxes", [])
+    tax_account = ""
+    for item in self.expenses:
         if item.amount_before_tax:
             total_amount_before_tax += flt(item.amount_before_tax, 3)
         else:
             total_amount_before_tax += item.amount
 
-    for item in doc.expenses:
+    for item in self.expenses:
         if item.is_taxable:
             tax_rate = frappe.db.get_value("Sales Taxes and Charges", {"parent": item.tax_and_charges}, "rate")
             
@@ -70,12 +68,23 @@ def add_tax_and_charges(doc):
             
             #15002 - Asset and Expense VAT 15% - iJOR
             
-            doc.append("taxes", {
-                "account_head": "Expenses Included In Valuation - iK", #static
+            match self.company:
+                case "iValue KSA":
+                    tax_account = "15001 - VAT Purchase - iKSA"
+                case "iValueUAE":
+                    tax_account = "15001 - VAT Purchase - iUAE"
+                case "iValueJOR":
+                    tax_account = "15001 - VAT Purchase - iJOR"
+                case _:
+                    tax_account = "15001 - VAT Purchase - iV"
+
+
+            self.append("taxes", {
+                "account_head": tax_account, #static
                 "rate":tax_rate,
                 "tax_amount": added_tax_amount_to_expense_amount,
                 "total": total_amount_before_tax + flt(added_tax_amount_to_expense_amount, 3),
-                "description":"Duties and Taxes - iK"
+                "description": tax_account
             })
         
         if item.amount_after_tax:
@@ -85,10 +94,10 @@ def add_tax_and_charges(doc):
             total_claimed_amount += item.amount
             total_sanctioned_amount += item.sanctioned_amount
 
-    doc.total_sanctioned_amount = total_sanctioned_amount
-    doc.total_taxes_and_charges = total_taxes_and_charges
-    doc.grand_total = total_taxes_and_charges + total_claimed_amount
-    doc.total_claimed_amount = total_claimed_amount
+    self.total_sanctioned_amount = total_sanctioned_amount
+    self.total_taxes_and_charges = total_taxes_and_charges
+    self.grand_total = total_taxes_and_charges + total_claimed_amount
+    self.total_claimed_amount = total_claimed_amount
 
 
 @frappe.whitelist()
@@ -106,33 +115,32 @@ def get_project_based_on_expense_type(project):
 
 
                 
-@frappe.whitelist()          
-def update_expense_claim(name):              
-    doc = frappe.get_doc("Expense Claim", name)
-    fetch_cost_center_and_pyable_account(doc)
+       
+def update_expense_claim(self):              
+
+    fetch_cost_center_and_pyable_account(self)
     # has been turnd off untill we work on the advance module
     # update_expense_claim_advances(self)
-    if doc.custom_espense_type != "Expense Claim":
-        update_petty_cash(doc)
-    
-    doc.save()
-
-    return {'status':201, "message":"Expense claim has been updated successfully"}
-  
-
+    if self.custom_espense_type != "Expense Claim":
+        update_petty_cash(self)
+    else:    
+        if self.workflow_state == "Accountant" or self.workflow_state == "Approved":
+            add_tax_and_charges(self)
+   
 
 
 
-def update_petty_cash(doc):
-    if doc.custom_pettycash:
-        frappe.db.set_value("Petty-cash", doc.custom_pettycash, "custom_expense_claim", doc.name, update_modified=True)
+
+def update_petty_cash(self):
+    if self.custom_pettycash:
+        frappe.db.set_value("Petty-cash", self.custom_pettycash, "custom_expense_claim", self.name, update_modified=True)
         frappe.db.commit()
 
-def fetch_cost_center_and_pyable_account(doc):
-    if not doc.project:
+def fetch_cost_center_and_pyable_account(self):
+    if not self.project:
         frappe.throw("please insert a project before save")
 
-    cost_center = frappe.db.get_value('Project', doc.project, 'cost_center')
+    cost_center = frappe.db.get_value('Project', self.project, 'cost_center')
 
 
     last_index = cost_center.rfind('-')
@@ -140,25 +148,25 @@ def fetch_cost_center_and_pyable_account(doc):
     if last_index != -1:
         cost_center = cost_center[:last_index].strip()
 
-    if  doc.company == 'iValueJOR':
+    if  self.company == 'iValueJOR':
         cost_center += ' - iJOR'
-    elif doc.company == 'iValueUAE':
+    elif self.company == 'iValueUAE':
          cost_center += ' - iUAE'
-    elif doc.company =='iValue KSA':
-        cost_center += ' - iK'
+    elif self.company =='iValue KSA':
+        cost_center += ' - iKSA'
     else:
         cost_center += ' - iV'
 
     
 
-    for row in doc.expenses:
+    for row in self.expenses:
         row.cost_center = cost_center
-        row.project = doc.project
+        row.project = self.project
     
-    doc.cost_center = cost_center
+    self.cost_center = cost_center
     
-    if doc.custom_espense_type != "Expense Claim":
-        doc.payable_account = "1620 - Petty Cash - iKSA"
+    if self.custom_espense_type != "Expense Claim":
+        self.payable_account = "1620 - Petty Cash - iKSA"
     
 
 # keep it for later
