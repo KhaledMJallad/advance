@@ -43,20 +43,7 @@ frappe.ui.form.on('Expense Claim', {
             get_project_data(frm);
         }
 
-        if(frm.doc.custom_espense_type === "Expense Claim"){
-            if(frm.doc.project){
-               await get_project_based_on_expense_type(frm)
-            }else{
-                frm.set_query('expense_type', 'expenses', function(doc, cdt, cdn) {
-                    return {
-                        filters: [
-                            ['Expense Claim Type', 'project', 'is', "not set" ]
-                        ]
-                    };
-                });
-
-            }
-        }
+      
     },
     after_workflow_action:async function(frm){
         if(frm.doc.workflow_state === "Approved" && (frm.doc.custom_espense_type === "Replenishment" || frm.doc.custom_espense_type === "Project petty-cash End")){
@@ -83,6 +70,7 @@ frappe.ui.form.on('Expense Claim', {
         if(frm.doc.custom_espense_type === "Expense Claim"){
             get_employee_company(frm) 
             await get_all_advances(frm)
+            await get_project_based_on_recorce_alloction(frm)
         }else if(frm.doc.custom_espense_type === "Replenishment"){
             await get_project_advance(frm)
         }else if(frm.doc.custom_espense_type === "Petty-cash Project End"){
@@ -166,17 +154,10 @@ frappe.ui.form.on('Expense Claim', {
             }
         
         }else{
-            if(frm.doc.project){
-                await get_project_based_on_expense_type(frm)
-            }else{
-                  frm.set_query('expense_type', 'expenses', function(doc, cdt, cdn) {
-                    return {
-                        filters: [
-                            ['Expense Claim Type', 'custom_project', 'is', "not set" ]
-                        ]
-                    };
-                });
+            if(frm.doc.employee){
+                await get_project_based_on_recorce_alloction(frm)
             }
+
             await get_employee_number_on_stand_alone(frm)
             if(frm.doc.workflow_state === "Initiator"){
                 if(curr_employee.message.employee_num !== frm.doc.employee && !frappe.user.has_role("System Manager")){
@@ -267,24 +248,24 @@ frappe.ui.form.on("Expense Claim Detail", {
 
 
 
-async function get_project_based_on_expense_type(frm){
+async function get_project_based_on_recorce_alloction(frm){
     frappe.call({
-        method:"advance.overrides.expense_claim.expense_claim.get_project_based_on_expense_type",
-        args:{project:frm.doc.project},
+        method:"advance.overrides.expense_claim.expense_claim.get_project_based_on_resoce_allocation",
+        args:{employee:frm.doc.employee, posting_date:frm.doc.posting_date},
         callback:function(response){
             if(response.message.status === 200){
-                frm.set_query('expense_type', 'expenses', function(doc, cdt, cdn) {
+                frm.set_query('project', function() {
                     return {
                         filters: [
-                            ['Expense Claim Type', 'name', 'in', response.message.data]
+                            ['Project', 'name', 'in', response.message.data]
                         ]
                     };
                 });
             }else{
-            frm.set_query('expense_type', 'expenses', function(doc, cdt, cdn) {
+            frm.set_query('project', function() {
                     return {
                         filters: [
-                            ['Expense Claim Type', 'custom_project', 'is', "not set" ]
+                            ['Project', 'name', 'in', response.message.data]
                         ]
                     };
                 });
@@ -345,10 +326,10 @@ async function get_employee_number_on_stand_alone(frm){
                 }
                 return response.message.employee_num
             }else{
-                frappe.show_alert({
-                        message: __(response.message.message),
-                        indicator: "red"
-                });
+                // frappe.show_alert({
+                //         message: __(response.message.message),
+                //         indicator: "red"
+                // });
 
             }
         }

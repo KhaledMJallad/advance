@@ -77,7 +77,7 @@ def fetch_cost_center_and_pyable_account(doc):
     elif doc.company == 'iValueUAE':
          cost_center += ' - iUAE'
     elif doc.company =='iValue KSA':
-        cost_center += ' - iKSA'
+        cost_center += ' - iK'
     else:
         cost_center += ' - iV'
 
@@ -132,6 +132,25 @@ def fetch_cost_center_and_pyable_account(doc):
 #         return {"status": 200, "data":file_name}
 #     else:
 #         return {"status": 203, "message":"file is already public"}
+
+
+@frappe.whitelist()
+def get_project_based_on_resoce_allocation(employee, posting_date):
+    projects = frappe.db.sql(''' 
+    SELECT project
+    FROM `tabProject Assignment`
+    WHERE `employee` = %s
+    AND `start_date` <= %s
+    AND `end_date` >= %s
+    AND `docstatus` = 1
+    ''', (employee, posting_date, posting_date, ), as_dict= True)
+
+    if projects:
+        projects_arr = [item.project for item in projects]
+        return {"status": 200, "data": projects_arr}
+    else:
+        return {"status": 404, "message": "no data was found", "data": []}
+
 
 
 @frappe.whitelist()

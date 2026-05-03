@@ -155,13 +155,13 @@ before_uninstall = "advance.uninstall.before_uninstall"
 # ---------------
 # Hook on document methods and events
 
-#doc_events = {
- #	"Expense Claim": {
+doc_events = {
+ 	"Expense Claim": {
  #		"before_insert": "advance.doc_event.before_insert",
  #		"before_save": "advance.doc_event.before_save",
- #		"validate": "advance.doc_event.validate"
- #	}
-#}
+ 		"validate": "advance.overrides.expense_claim.expense_claim"
+ 	}
+}
 
 # Scheduled Tasks
 # ---------------
