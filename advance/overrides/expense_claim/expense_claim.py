@@ -218,7 +218,7 @@ def get_project_based_on_resoce_allocation(employee, posting_date):
     WHERE `employee` = %s
     AND `start_date` <= %s
     AND `end_date` >= %s
-    AND `status` = "Approved"
+    AND `workflow_state` = "Approved"
     ''', (employee, posting_date, posting_date, ), as_dict= True)
 
     if projects:
