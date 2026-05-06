@@ -34,9 +34,6 @@ frappe.ui.form.on('Expense Claim', {
             }
         }
     },
-    // after_save:function(frm){
-    //     update_expense_calim(frm)
-    // },
     project:async function(frm){
         // always get the project data
         if(frm.doc.project){
@@ -75,6 +72,18 @@ frappe.ui.form.on('Expense Claim', {
             await get_project_advance(frm)
         }else if(frm.doc.custom_espense_type === "Petty-cash Project End"){
             await get_project_advance(frm)
+        }
+    },
+    custom_expense_date:async function(frm){
+
+        if(frm.doc.custom_espense_type === "Expense Claim"){
+            await get_project_based_on_recorce_alloction(frm)
+            frm.doc.expenses.map((row)=> {
+                if(row.expense_date){
+                    row.expense_date = null 
+                    frm.refresh_field('expenses')
+                }
+            })
         }
     },
     before_workflow_action: async function (frm) {
@@ -154,10 +163,21 @@ frappe.ui.form.on('Expense Claim', {
             }
         
         }else{
-            if(frm.doc.employee){
+            if(frm.doc.employee && frm.doc.custom_expense_date){
                 await get_project_based_on_recorce_alloction(frm)
+            }else{
+                frm.set_query('project', function() {
+                    return {
+                        filters: [
+                            ['Project', 'name', 'in', []]
+                        ]
+                    };
+                });
             }
 
+            if(!frm.doc.custom_expense_date){
+                frm.set_value("custom_expense_date", frappe.datetime.get_today())
+            }
             await get_employee_number_on_stand_alone(frm)
             if(frm.doc.workflow_state === "Initiator"){
                 if(curr_employee.message.employee_num !== frm.doc.employee && !frappe.user.has_role("System Manager")){
@@ -234,14 +254,23 @@ frappe.ui.form.on("Expense Claim Detail", {
         row.project = frm.doc.project
         frm.refresh_field('expenses')
     },
-    expense_type:async function(frm, cdn, cdt){
-        if(frm.doc.custom_espense_type === "Expense Claim"){
-            const row = locals[cdn][cdt]
-            if(!frm.doc.project){
-                row.expense_type = ""
-                frappe.throw("Please select a project before selecting expense claim type")
+    // expense_type:async function(frm, cdn, cdt){
+    //     if(frm.doc.custom_espense_type === "Expense Claim"){
+    //         const row = locals[cdn][cdt]
+    //         if(!frm.doc.project){
+    //             row.expense_type = ""
+    //             frappe.throw("Please select a project before selecting expense claim type")
 
-            }
+    //         }
+    //     }
+    // },
+    expense_date:function(frm, cdn, cdt){
+        const row = locals[cdn][cdt]
+
+        if(row.expense_date > frm.doc.custom_expense_date){
+            row.expense_date = null 
+            frm.refresh_field('expenses')
+            frappe.throw("Expense date in table must be before allocated expense date")
         }
     }
 });
@@ -249,30 +278,40 @@ frappe.ui.form.on("Expense Claim Detail", {
 
 
 async function get_project_based_on_recorce_alloction(frm){
-    frappe.call({
-        method:"advance.overrides.expense_claim.expense_claim.get_project_based_on_resoce_allocation",
-        args:{employee:frm.doc.employee, posting_date:frm.doc.posting_date},
-        callback:function(response){
-            if(response.message.status === 200){
+    if (frm.doc.employee && frm.doc.custom_expense_date){
+        frappe.call({
+            method:"advance.overrides.expense_claim.expense_claim.get_project_based_on_resoce_allocation",
+            args:{employee:frm.doc.employee, posting_date:frm.doc.custom_expense_date},
+            callback:function(response){
+                if(response.message.status === 200){
+                    frm.set_query('project', function() {
+                        return {
+                            filters: [
+                                ['Project', 'name', 'in', response.message.data]
+                            ]
+                        };
+                    });
+                }else{
                 frm.set_query('project', function() {
-                    return {
-                        filters: [
-                            ['Project', 'name', 'in', response.message.data]
-                        ]
-                    };
-                });
-            }else{
-            frm.set_query('project', function() {
-                    return {
-                        filters: [
-                            ['Project', 'name', 'in', response.message.data]
-                        ]
-                    };
-                });
+                        return {
+                            filters: [
+                                ['Project', 'name', 'in', response.message.data]
+                            ]
+                        };
+                    });
+                    frappe.throw("You are not allocated to any project. Please contact the Resource Allocation Manager to be assigned to a project.")
+                }
             }
-        }
-    })
-
+        })
+    }else{
+        frm.set_query('project', function() {
+                return {
+                    filters: [
+                        ['Project', 'name', 'in', []]
+                    ]
+                };
+        });
+    }
 }
 
 
