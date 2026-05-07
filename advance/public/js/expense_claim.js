@@ -174,6 +174,14 @@ frappe.ui.form.on('Expense Claim', {
                     };
                 });
             }
+            frm.set_query("tax_and_charges", "expenses", function() {
+                return {
+                    filters: [
+                        ["Sales Taxes and Charges Template", "company", "=", frm.doc.company]
+                    ]
+                    
+                };
+            });
 
             if(!frm.doc.custom_expense_date){
                 frm.set_value("custom_expense_date", frappe.datetime.get_today())
@@ -251,7 +259,7 @@ frappe.ui.form.on("Expense Claim Detail", {
     },
     expenses_add:function(frm, cdn, cdt){
         const row = locals[cdn][cdt];
-        row.project = frm.doc.project
+        row.expense_date = ""
         frm.refresh_field('expenses')
     },
     // expense_type:async function(frm, cdn, cdt){

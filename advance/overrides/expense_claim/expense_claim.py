@@ -27,7 +27,7 @@ class CustomExpenseClaim(ExpenseClaim):
 
 def add_tax_and_charges(self):
 
-    total_amount_before_tax = 0.0
+    total_amount_for_tax = 0.0
     total_sanctioned_amount = 0.0
     grand_total = 0.0
     total_taxes_and_charges = 0.0 
@@ -35,22 +35,33 @@ def add_tax_and_charges(self):
 
     self.set("taxes", [])
     tax_account = ""
-    for item in self.expenses:
-        if item.amount_before_tax:
-            total_amount_before_tax += flt(item.amount_before_tax, 3)
-        else:
-            total_amount_before_tax += item.amount
+    # for item in self.expenses:
+    #     if item.amount_before_tax:
+    #         total_amount_before_tax += flt(item.amount_before_tax, 3)
+    #     else:
+    #         total_amount_before_tax += item.amount
 
     for item in self.expenses:
+        if not item.is_taxable:
+            #calculate in case it was taxable and removes it 
+            if item.amount_before_tax:
+                item.amount = flt(item.amount_before_tax, 3)
+                item.sanctioned_amount = flt(item.amount_before_tax, 3)
+            total_amount_for_tax += item.amount
+        
         if item.is_taxable:
             tax_rate = frappe.db.get_value("Sales Taxes and Charges", {"parent": item.tax_and_charges}, "rate")
             
             if not item.amount_before_tax:
                 item.amount_before_tax = item.amount
             
+            total_amount_for_tax += flt(item.amount_before_tax, 3)
+            
             tax_amount = (tax_rate + 100) / 100
             amount_after_tax = flt(item.amount_before_tax, 3) / tax_amount
             
+
+
             if not item.amount_after_tax:
                 item.amount_after_tax = amount_after_tax
 
@@ -83,13 +94,14 @@ def add_tax_and_charges(self):
                 "account_head": tax_account, #static
                 "rate":tax_rate,
                 "tax_amount": added_tax_amount_to_expense_amount,
-                "total": total_amount_before_tax + flt(added_tax_amount_to_expense_amount, 3),
+                "total": flt(total_amount_for_tax, 3),
                 "description": tax_account
             })
-        
-        if item.amount_after_tax:
+
+    for item in self.expenses:
+        if item.is_taxable:
             total_claimed_amount += flt(item.amount_after_tax, 3)
-            total_sanctioned_amount += flt(amount_after_tax, 3)
+            total_sanctioned_amount += flt(item.amount_after_tax, 3)
         else:
             total_claimed_amount += item.amount
             total_sanctioned_amount += item.sanctioned_amount
@@ -149,7 +161,7 @@ def fetch_cost_center_and_pyable_account(self):
         cost_center = cost_center[:last_index].strip()
 
     if  self.company == 'iValueJOR':
-        cost_center += ' - iJOR'
+        cost_center += ' - iiValueJOR'
     elif self.company == 'iValueUAE':
          cost_center += ' - iUAE'
     elif self.company =='iValue KSA':
