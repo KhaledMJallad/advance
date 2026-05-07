@@ -1,7 +1,7 @@
 {
   "name": "Expense Claim Detail",
-  "creation": "2026-04-15 13:39:56.898932",
-  "modified": "2026-04-29 10:41:59.044733",
+  "creation": "2026-05-06 13:54:39.324928",
+  "modified": "2026-05-06 13:54:39.774801",
   "modified_by": "Administrator",
   "owner": "Administrator",
   "docstatus": 0,
@@ -32,7 +32,7 @@
   "allow_guest_to_view": 0,
   "email_append_to": 0,
   "show_title_field_in_link": 0,
-  "migration_hash": "d96f0be5c257f242984d8ae07d80e278",
+  "migration_hash": "05867a02706a3c1f6add8ddfbb82746b",
   "translated_doctype": 0,
   "is_calendar_and_gantt": 0,
   "quick_entry": 0,
@@ -49,15 +49,12 @@
   "row_format": "Dynamic",
   "rows_threshold_for_grid_search": 0,
   "doctype": "DocType",
-  "links": [],
-  "actions": [],
-  "permissions": [],
   "states": [],
   "fields": [
     {
-      "name": "7m6ulvdbol",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqog3a8ukj",
+      "creation": "2026-05-06 13:54:39.326004",
+      "modified": "2026-05-06 13:54:39.326004",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -115,9 +112,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m6e8kmeeq",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqonrasqna",
+      "creation": "2026-05-06 13:54:39.327317",
+      "modified": "2026-05-06 13:54:39.327317",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -171,9 +168,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m6u441mf7",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqomr4n12t",
+      "creation": "2026-05-06 13:54:39.328582",
+      "modified": "2026-05-06 13:54:39.328582",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -225,9 +222,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m6kv89c49",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqo2241g1p",
+      "creation": "2026-05-06 13:54:39.330521",
+      "modified": "2026-05-06 13:54:39.330521",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -285,9 +282,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m6c65r1cu",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqong7qu18",
+      "creation": "2026-05-06 13:54:39.331851",
+      "modified": "2026-05-06 13:54:39.331851",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -342,9 +339,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m6eae7b08",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqo3eptd7d",
+      "creation": "2026-05-06 13:54:39.333204",
+      "modified": "2026-05-06 13:54:39.333204",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -396,9 +393,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m6v1pqnel",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqoub414d4",
+      "creation": "2026-05-06 13:54:39.334334",
+      "modified": "2026-05-06 13:54:39.334334",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -456,9 +453,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m676fon5h",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqoohrdob3",
+      "creation": "2026-05-06 13:54:39.335463",
+      "modified": "2026-05-06 13:54:39.335463",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -510,9 +507,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m6dbnvrid",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqoe2f60bb",
+      "creation": "2026-05-06 13:54:39.336740",
+      "modified": "2026-05-06 13:54:39.336740",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -566,9 +563,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m6aiaplfg",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqom60vvmi",
+      "creation": "2026-05-06 13:54:39.338147",
+      "modified": "2026-05-06 13:54:39.338147",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -620,9 +617,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m65nj7bhk",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqo7i9q62r",
+      "creation": "2026-05-06 13:54:39.339521",
+      "modified": "2026-05-06 13:54:39.339521",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -675,9 +672,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m6eq7cl0b",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqo3t143v3",
+      "creation": "2026-05-06 13:54:39.340715",
+      "modified": "2026-05-06 13:54:39.340715",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -729,9 +726,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m6n4q6bk0",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqolnvpivp",
+      "creation": "2026-05-06 13:54:39.342656",
+      "modified": "2026-05-06 13:54:39.342656",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -789,9 +786,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m6upl2mck",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqorcsmai9",
+      "creation": "2026-05-06 13:54:39.344258",
+      "modified": "2026-05-06 13:54:39.344258",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -843,9 +840,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m68b5v2fj",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqof1qhkum",
+      "creation": "2026-05-06 13:54:39.345764",
+      "modified": "2026-05-06 13:54:39.345764",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -903,9 +900,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m6ai474lf",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqo3mdv28a",
+      "creation": "2026-05-06 13:54:39.347359",
+      "modified": "2026-05-06 13:54:39.347359",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -958,9 +955,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m6alsbqal",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqo69rt9b4",
+      "creation": "2026-05-06 13:54:39.350988",
+      "modified": "2026-05-06 13:54:39.350988",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -1014,9 +1011,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m6jgdn6hb",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqoio8a1mn",
+      "creation": "2026-05-06 13:54:39.353012",
+      "modified": "2026-05-06 13:54:39.353012",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -1068,9 +1065,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m61h0ihlb",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqolg4nb2q",
+      "creation": "2026-05-06 13:54:39.354139",
+      "modified": "2026-05-06 13:54:39.354139",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -1125,9 +1122,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m6a43ft79",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqotl0bpih",
+      "creation": "2026-05-06 13:54:39.355633",
+      "modified": "2026-05-06 13:54:39.355633",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -1180,9 +1177,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m6u7gsnel",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqoa5q3i17",
+      "creation": "2026-05-06 13:54:39.356844",
+      "modified": "2026-05-06 13:54:39.356844",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -1236,9 +1233,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m6lpqr9c6",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqoold2354",
+      "creation": "2026-05-06 13:54:39.358773",
+      "modified": "2026-05-06 13:54:39.358773",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -1291,9 +1288,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m68ecnfce",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqo5h4mgpv",
+      "creation": "2026-05-06 13:54:39.359991",
+      "modified": "2026-05-06 13:54:39.359991",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -1345,9 +1342,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m6g6qcarc",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqouap6kk2",
+      "creation": "2026-05-06 13:54:39.361421",
+      "modified": "2026-05-06 13:54:39.361421",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -1400,9 +1397,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m608qf455",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqokdd9u1l",
+      "creation": "2026-05-06 13:54:39.362511",
+      "modified": "2026-05-06 13:54:39.362511",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -1455,9 +1452,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m6hlmpuo5",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqoat652u6",
+      "creation": "2026-05-06 13:54:39.363884",
+      "modified": "2026-05-06 13:54:39.363884",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -1510,9 +1507,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m6njgn7f3",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqoifus3a2",
+      "creation": "2026-05-06 13:54:39.365270",
+      "modified": "2026-05-06 13:54:39.365270",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -1566,9 +1563,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m6d667mj3",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqo0h8ehtr",
+      "creation": "2026-05-06 13:54:39.366835",
+      "modified": "2026-05-06 13:54:39.366835",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -1621,9 +1618,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m68ht8ob8",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqoi5bbb44",
+      "creation": "2026-05-06 13:54:39.367885",
+      "modified": "2026-05-06 13:54:39.367885",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -1676,9 +1673,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m62ft3m88",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqok4nk1ek",
+      "creation": "2026-05-06 13:54:39.369272",
+      "modified": "2026-05-06 13:54:39.369272",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -1733,9 +1730,9 @@
       "doctype": "DocField"
     },
     {
-      "name": "7m6smrgfdm",
-      "creation": "2026-04-15 13:39:56.898932",
-      "modified": "2026-04-29 10:41:59.044733",
+      "name": "aqom2prd70",
+      "creation": "2026-05-06 13:54:39.370653",
+      "modified": "2026-05-06 13:54:39.370653",
       "modified_by": "Administrator",
       "owner": "Administrator",
       "docstatus": 0,
@@ -1787,5 +1784,9 @@
       "make_attachment_public": 0,
       "doctype": "DocField"
     }
-  ]
+  ],
+  "actions": [],
+  "permissions": [],
+  "links": [],
+  "__unsaved": 0
 }
