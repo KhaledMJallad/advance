@@ -12,7 +12,7 @@ fixtures = [
     },
     {
         "dt": "Workflow State",
-        "filters": [["workflow_state_name", "in", ["Initiator", "Project Manager", "Accountant", "CFO", "Supporting Services Director", "Approved", "Rejected", "Accountant Submit", "unpaid", "paid", "On Behalf", "Cancel"]]]
+        "filters": [["workflow_state_name", "in", ["Initiator", "Project Manager", "Accountant", "CFO", "Supporting Services Director", "Approved", "Rejected", "Accountant Submit", "unpaid", "paid", "On Behalf", "Cancel", "HR User"]]]
     },
     {"dt": "DocType", "filters": [["name", "=", "Expense Claim Detail"]]}
 ]
@@ -59,6 +59,7 @@ doctype_js = {
 
 	"Employee Advance" : "public/js/employee_advance.js",
 	"Expense Claim" : "public/js/expense_claim.js",
+	# "Expense Claim" : "public/js/make_attach_public_by_default.js",
 	"Project" :"public/js/Project.js",
 	"Payment Entry":"public/js/payment_entry.js"
 
@@ -148,19 +149,18 @@ before_uninstall = "advance.uninstall.before_uninstall"
 # ---------------
 # Override standard doctype classes
 
-#override_doctype_class = {"Employee Advance": "advance.overrides.employee_advance.employee_advance.CustomEmployeeAdvance"}
+override_doctype_class = {"Expense Claim": "advance.overrides.expense_claim.expense_claim.CustomExpenseClaim"}
 
 # Document Events
 # ---------------
 # Hook on document methods and events
 
-#doc_events = {
- #	"Expense Claim": {
- #		"before_insert": "advance.doc_event.before_insert",
- #		"before_save": "advance.doc_event.before_save",
- #		"validate": "advance.doc_event.validate"
- #	}
-#}
+# doc_events = {
+#  	"Expense Claim": {
+#         "on_submit":"advance.overrides.expense_claim.expense_claim.validate",
+#  		"validate": "advance.overrides.expense_claim.expense_claim.validate"
+#  	}
+# }
 
 # Scheduled Tasks
 # ---------------

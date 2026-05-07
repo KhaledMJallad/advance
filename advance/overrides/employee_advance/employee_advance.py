@@ -11,6 +11,85 @@ def change_status(name):
     return {'status': 201, 'message': 'updated successfuly'}
 
 
+
+@frappe.whitelist()
+def assigned_directly_to_Accountant(name):
+    doc = frappe.get_doc("Employee Advance", name)
+    frappe.db.set_value("Employee Advance", name,"workflow_state", "unpaid")
+    frappe.db.set_value("Employee Advance", name,"docstatus", 1)
+    frappe.db.set_value("Employee Advance", name, "status", "Unpaid")
+    frappe.db.commit()
+
+    assigend_to_accountant(name)
+
+    # ✅ return AFTER processing all users, without manual commit
+    return {"status": 201, "message": "ToDo has been added successfully"}
+
+
+
+
+def assigend_to_accountant(name):
+    users = frappe.db.sql(
+        """
+        SELECT DISTINCT hr.parent AS user_id
+        FROM `tabHas Role` hr
+        JOIN `tabUser` u ON u.name = hr.parent
+        WHERE hr.role = %s
+        AND hr.parenttype = 'User'
+        AND u.enabled = 1
+        AND u.user_type = 'System User'
+        AND u.name != 'Administrator'
+        """,
+        ('Accounts User',),
+        as_dict=True,
+    )
+    status = ["Open", "Pending"]
+
+    for item in users:
+        user_id = item["user_id"]
+        
+        # Check if ToDo already exists and is still open/pending
+        exists = frappe.db.exists(
+            "ToDo",
+            {
+                "reference_type": "Employee Advance",
+                "reference_name": name,
+                "allocated_to": user_id,
+                "status": ("in", status),
+            },
+        )
+
+        if not exists:
+            todo = frappe.get_doc(
+                {
+                    "doctype": "ToDo",
+                    "allocated_to": user_id,
+                    "reference_type": "Employee Advance",
+                    "reference_name": name,
+                    "description": f"Approve Employee advance name {name}",
+                    "priority": "High",
+                    "status": "Open",
+                    "date": frappe.utils.today(),
+                }
+            )
+            todo.insert(ignore_permissions=True)
+        frappe.share.add("Employee Advance", name, user_id, read=1, write=1, share=1)
+
+
+	
+
+
+@frappe.whitelist()
+def change_workflow_status(name):
+    doc = frappe.get_doc('Employee Advance', name)
+    status = doc.status
+
+    if status == "Paid":
+        status = "paid"
+    
+    frappe.db.set_value("Employee Advance", name, "workflow_state", status, update_modified=True)
+    return {'status': 201, 'message': 'updated successfuly'}
+
 @frappe.whitelist()
 def get_lisson_officer(employee):
     response = frappe.db.sql(''' SELECT 
@@ -218,3 +297,13 @@ def update_petty_cash_status(name):
     frappe.db.set_value('Petty-cash', petty_cash[0], 'docstatus', 2)
     frappe.db.commit()
     return {'status': 201 , 'message': "Status has been updated successfully"}
+
+
+@frappe.whitelist()
+def fetch_compant_based_on_employee(employee):
+    company = frappe.db.get_value('Employee', employee, "company")
+
+    if company:
+        return {'status': 200 , 'data': company}
+    else:
+        return {'status': 404, 'message':"No company has been assigend to this user"}

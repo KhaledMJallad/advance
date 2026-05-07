@@ -4,21 +4,39 @@ let employee_number = 0;
 let project_manager = null;
 let on_behalf = null;
 frappe.ui.form.on('Employee Advance', {
+    after_save:function(frm){
+        if(!frm.doc.custom_project){
+            assigned_directly_to_Accountant(frm)
+
+        }
+    },
     before_cancel: async function (frm) {
         await change_wf_status(frm)
     },
     after_workflow_action:async function(frm){
-        await get_project_data(frm)
+        if(frm.doc.custom_project){
+            await get_project_data(frm)
+        }
+        
         add_assigen_to(frm)
         if(frm.doc.workflow_state === "Rejected"){
             cancel_petty_cash(frm);
         }
     },
     refresh: async function (frm) {
-        
         await get_employee_number(frm)
-        await get_project_data(frm)
+        if(frm.doc.custom_project){
+            await get_project_data(frm)
+        }
         if(!frm.is_new()){
+
+            
+            if(frm.doc.docstatus === 1){
+                if(frm.doc.status !== frm.doc.workflow_state){
+                    await change_workflow_status_on_submit(frm)
+                }
+            }
+
             if(frm.doc.workflow_state === 'On Behalf'){
                 if(on_behalf === employee_number || frappe.user.has_role("System Manager")){
                     frm.page.actions_btn_group.show(); 
@@ -33,10 +51,31 @@ frappe.ui.form.on('Employee Advance', {
                 }
             }
         }
+
+
     },
+    employee:function(frm){
+        if(!frm.doc.custom_project){
+            fetch_company_based_on_employee(frm)
+        }
+    }
 });
 
-
+function assigned_directly_to_Accountant(frm){
+    frappe.call({
+        method:"advance.overrides.employee_advance.employee_advance.assigned_directly_to_Accountant",
+        args:{name:frm.doc.name},
+        callback:function(response){
+            if(response.message.status === 201){
+                frappe.show_alert({
+                    message: __("On Behalf has been added"),
+                    indicator: "green"
+                });
+                frm.reload_doc();
+            }
+        }
+    })
+}
 
 async function get_project_data(frm){
       const response = await frappe.call({
@@ -91,12 +130,12 @@ async function get_employee_number(frm){
         args:{user:frappe.session.user}
     })
    if(response.message.status === 404){
-        if(frappe.user.has_role("System Manager")){
-            frm.set_df_property('employee', 'read_only', true);
-        }else{
-            frm.set_df_property('employee', 'read_only', true);
-            frappe.throw(response.message.message);
-        }
+        // if(frappe.user.has_role("System Manager")){
+        //     frm.set_df_property('employee', 'read_only', true);
+        // }else{
+        //     frm.set_df_property('employee', 'read_only', true);
+        //     frappe.throw(response.message.message);
+        // }
    }else{
         response.message.data.forEach(item => employee = item.name)
         employee_number = employee;
@@ -119,6 +158,36 @@ function cancel_petty_cash(frm){
             }else{
                 frappe.throw('An error has occurred. Please contact your administrator to resolve this issue.')
             }
+        }
+    })
+}
+
+
+function fetch_company_based_on_employee(frm){
+    frappe.call({
+        method:"advance.overrides.employee_advance.employee_advance.fetch_compant_based_on_employee",
+        args:{employee:frm.doc.employee},
+        callback:function(response){
+            if(response.message.status === 200){
+                frm.set_value("company",response.message.data)   
+            }
+        }
+    })
+}
+
+
+async function change_workflow_status_on_submit(frm){
+    await frappe.call({
+        method:"advance.overrides.employee_advance.employee_advance.change_workflow_status",
+        args:{name:frm.doc.name},
+        callbanck:function(recponse){
+            if(recponse.message.status === 201){
+                frappe.show_alert({
+                    message: __("status has been cahnged successfully"),
+                    indicator: "green"
+                });
+            }
+            frm.reload_doc()
         }
     })
 }

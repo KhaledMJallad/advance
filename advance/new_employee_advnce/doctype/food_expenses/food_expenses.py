@@ -45,7 +45,7 @@ class FoodExpenses(Document):
         		
 
 
-	
+
 	
 @frappe.whitelist()
 def get_employee_number(user): 
