@@ -131,6 +131,7 @@ def get_project_based_on_expense_type(project):
 def update_expense_claim(self):              
 
     fetch_cost_center_and_pyable_account(self)
+    change_expense_approval_to_project_manager(self)
     # has been turnd off untill we work on the advance module
     # update_expense_claim_advances(self)
     if self.custom_espense_type != "Expense Claim":
@@ -141,6 +142,13 @@ def update_expense_claim(self):
    
 
 
+
+
+def change_expense_approval_to_project_manager(self):
+    project_manager = frappe.db.get_value("Project", self.project, "project_manager")
+    project_manager_email = frappe.db.get_value("Employee", project_manager, "user_id")
+
+    self.expense_approver = project_manager_email
 
 
 def update_petty_cash(self):
