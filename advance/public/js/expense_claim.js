@@ -615,6 +615,7 @@ async function get_project_data(frm){
                 user_id = item.user_id
             })
             frm.set_value("expense_approver", user_id)
+            frm.reload_doc()
        }
     }
 }
